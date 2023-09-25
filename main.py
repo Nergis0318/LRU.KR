@@ -1,80 +1,148 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse, HTMLResponse
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-import json
-import random
-import string
+from fastapi import *
+from fastapi.responses import *
+from fastapi.middleware.cors import *
+from pydantic import *
+from typing import *
+from function import *
+from schema import *
+from variable import *
+from redis.commands.json.path import Path
+import base64
 
-app = FastAPI()
+app = FastAPI(title="sqlr.kr",
+    summary="Made By Dev_Nergis(BACK), imnyang(BACK), ny64(FRONT)",
+    description="sqlr.kr is a URL shortening service.",
+    version="redis-4.1.0")
 
-# Jinja2 템플릿 설정
-templates = Jinja2Templates(directory="templates")
-
-# JSON 파일 이름
-json_filename = "short_links.json"
-
-# JSON 파일에서 데이터 로드
-def load_short_links():
-    try:
-        with open(json_filename, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
-
-# JSON 파일에 데이터 저장
-def save_short_links(links):
-    with open(json_filename, "w") as file:
-        json.dump(links, file)
-
-# 단축 링크를 저장할 딕셔너리
-short_links = load_short_links()
-
-class Link(BaseModel):
-    url: str
-
-# 단축 링크 생성
-def generate_short_link():
-    letters = string.ascii_letters
-    while True:
-        short_key = ''.join(random.choice(letters) for _ in range(4))
-        if short_key not in short_links:
-            return short_key
-
-@app.get("/list", response_class=HTMLResponse)
-async def list(request: Request):
-    return templates.TemplateResponse("list.html", {"request": request, "short_links": short_links})
-
-@app.get("/{short_key}")
-async def redirect_to_original(short_key: str):
-    if short_key in short_links:
-        url = short_links[short_key]
-        return RedirectResponse(url)  # 원래 URL로 리디렉션
-    else:
-        raise HTTPException(status_code=404, detail="Short link not found")
-
-# 단축 링크 생성 API
-@app.post("/shorten")
-async def shorten_link(link: Link):
-    original_url = link.url
-
-    # 이미 단축된 링크인지 확인
-    for key, value in short_links.items():
-        if value == original_url:
-            return {"short_link": f"/{key}"}
-
-    # 단축 링크 생성
-    short_key = generate_short_link()
-    short_links[short_key] = original_url
-    save_short_links(short_links)
-    return {"short_link": f"/{short_key}"}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) 
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@app.post("/shorten", response_class=ORJSONResponse)
+async def shorten_link(body: Link):
+    key = await anext(generate_key())
+    url_hash = base64.b85encode(body.url.encode())
+
+    if body.password == None:
+        hgQs = {"url": url_hash.hex()}
+    else:
+        salt, password_hash = security(body.password).hash_new_password()
+        hgQs = {"url": url_hash.hex(), "salt": salt.hex(), "password_hash": password_hash.hex()}
+
+    db = redis.Redis(connection_pool=pool(KEY_DB))
+    await db.json().set(key, Path.root_path(), hgQs)
+    await db.close()
+
+    return {"short_link": f"{DOMAIN}/{key}"}
+
+@app.post("/shorten_emoji", response_class=ORJSONResponse)
+async def shorten_emoji_link(body: Link):
+    key = await anext(generate_emoji_key())
+    url_hash = base64.b85encode(body.url.encode())
+
+    if body.password == None:
+        hgQs = {"url": url_hash.hex()}
+    else:
+        salt, password_hash = security(body.password).hash_new_password()
+        hgQs = {"url": url_hash.hex(), "salt": salt.hex(), "password_hash": password_hash.hex()}
+
+    db = redis.Redis(connection_pool=pool(EMOJI_DB))
+    await db.json().set(key, Path.root_path(), hgQs)
+    await db.close()
+
+    return {"short_link": f"{DOMAIN}/{key}"}
+
+@app.post("/tossDonate", response_class=ORJSONResponse)
+async def shorten_donate(body: Link_Donate):
+    if not body.url.startswith("https://toss.me"):
+        return ORJSONResponse(content={"error": "이 기능은 무조건 'https://toss.me'로 시작해야해요."}, status_code=400)
+    
+    key = await anext(generate_key())
+    url_hash = base64.b85encode(body.url.encode())
+    hgQs = {"url": url_hash.hex()}
+
+    db = redis.Redis(connection_pool=pool(DONATE_DB))
+    await db.json().set(key, Path.root_path(), hgQs)
+    await db.close()
+
+    return {"short_link": f"{DOMAIN}/d/{key}"}
+
+@app.post("/shorten_qr_code", response_class=FileResponse)
+async def generate_qr_code(body: Link_QRCODE, file: Optional[bool] = None):
+    key = await anext(generate_key())
+    url_hash = base64.b85encode(body.data.encode())
+    hgQs = {"url": url_hash.hex()}
+
+    db = redis.Redis(connection_pool=pool(KEY_DB))
+    await db.json().set(key, Path.root_path(), hgQs)
+    await db.close()
+
+    img = generate_qr_code_image(f"{DOMAIN}/{key}", body.version, body.error_correction, body.box_size, body.border, body.mask_pattern).read()
+
+    if file:
+        return Response(img)
+    else:
+        return HTMLResponse(content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />')
+
+@app.get("/{short_key}")
+async def redirect_to_original(request: Request, short_key: str, password: Optional[str] = None):
+    db_c = redis.Redis(connection_pool=pool(KEY_DB))
+    db = await db_c.json().jsonget(short_key, Path.root_path())
+    await db_c.close()
+
+    if db == None:
+        db_c = redis.Redis(connection_pool=pool(EMOJI_DB))
+        db = await db_c.json().jsonget(short_key, Path.root_path())
+        await db_c.close()
+
+    try:
+        url = bytes.fromhex(db["url"]).decode("utf-8")
+        url = base64.b85decode(url).decode("utf-8")
+    except:
+        return HTTP_404(request)
+
+    try:
+        salt = bytes.fromhex(db["salt"])
+        password_hash = bytes.fromhex(db["password_hash"])
+    except:
+        return RedirectResponse(url)
+
+    if isinstance(password, str):
+        if security(str(password), salt, password_hash).is_correct_password():
+            return RedirectResponse(url)
+        else:
+            return HTTP_401(request)
+    else:
+        return HTTP_401(request)
+
+@app.get("/d/{short_key}")
+async def redirect_to_original(request: Request, short_key: str):
+    db_c = redis.Redis(connection_pool=pool(DONATE_DB))
+    db = await db_c.json().jsonget(short_key, Path.root_path())
+    await db_c.close()
+
+    try:
+        url = bytes.fromhex(db["url"]).decode("utf-8")
+        url = base64.b85decode(url).decode("utf-8")
+    except:
+        return HTTP_404(request)
+
+    return RedirectResponse(url)
+
+@app.get("/api/metadata", response_class=ORJSONResponse)
+async def metadata(url: str):
+    return get_metadata(url)
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=1111)
 
-# 코체 바보
+# 코체 멍청이
