@@ -2,7 +2,9 @@ fastapi[all]
 redis
 nest_asyncio
 lxml
-metadata_parser
 emoji
 python-dotenv
 qrcode
+pydantic
+hypercorn
+pillow
