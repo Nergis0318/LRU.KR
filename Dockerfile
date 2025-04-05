@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 2001
 
-CMD ["./start.sh"]
+ENTRYPOINT ["hypercorn", "main:app", "--bind", "localhost:2001", "-w", "10"]
