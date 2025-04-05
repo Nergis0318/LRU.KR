@@ -26,11 +26,6 @@ def HTTP_404(request: object):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 
-# noinspection PyPep8Naming
-def HTTP_401(request: object):
-    return templates.TemplateResponse("401.html", {"request": request}, status_code=401)
-
-
 async def generate_key(length: int = 4) -> AsyncGenerator:
     __length__ = length
     while True:
