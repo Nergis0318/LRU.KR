@@ -4,39 +4,38 @@
 <head>
     <meta charset="utf-8">
     <title>🔗 ➡️ 💨</title>
+    <meta name="description" content="링크를 더 짧게, sqlr.kr">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-	    @font-face {
-	    	font-family: "Pretendard Variable";
-          	src: url("https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.8/variable/pretendardvariable-dynamic-subset.css");
-          	font-display: auto;
+        @font-face {
+            font-family: "Pretendard Variable";
+            src: url("https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.8/variable/pretendardvariable-dynamic-subset.css");
+            font-display: auto;
         }
 
         body {
             font-family: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
             background-color: #141923;
+            color: #fff;
             margin: 0;
             padding: 0;
             display: flex;
-            text-align: center;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             width: 100vw;
             height: 100vh;
+            text-align: center;
         }
 
         header {
             width: 100vw;
             height: 10%;
-            flex: 1;
-            color: white;
-            margin: 0;
-            padding: 0;
             display: flex;
-            text-align: left;
             flex-direction: row;
             align-items: center;
             justify-content: left;
+            padding: 0;
         }
 
         header h1 {
@@ -49,17 +48,14 @@
         header ul {
             display: flex;
             width: 80%;
-            text-align: left;
             flex-direction: row;
             align-items: center;
             justify-content: right;
-            margin-left: 10px;
             margin-right: 20px;
         }
 
         header ul li {
-            margin-left: 5px;
-            margin-right: 5px;
+            margin: 0 5px;
         }
 
         header ul li a {
@@ -69,27 +65,18 @@
         main {
             width: 100vw;
             height: 90%;
-            flex: 9;
-            margin: 0;
-            padding: 0;
             display: flex;
-            text-align: center;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
 
-        h1 {
-            color: #fff;
-        }
-
+        h1,
         h1 a {
-            text-align: center;
             color: #fff;
         }
 
         label {
-            color: #fff;
             display: block;
             margin-bottom: 10px;
         }
@@ -117,14 +104,11 @@
         }
 
         #short-link {
-            color: white;
-            text-align: center;
             display: none;
             margin-top: 20px;
         }
 
         #short-link p {
-            color: white;
             font-weight: bold;
         }
 
@@ -138,25 +122,16 @@
         }
 
         h2 {
-            color: white;
-            text-align: center;
             margin-top: 20px;
         }
 
         ul {
-            color: white;
             list-style-type: none;
             padding: 0;
-            text-align: center;
         }
 
         li {
-            color: white;
             margin: 10px 0;
-        }
-
-        a h1 {
-            color: #fff;
         }
 
         a {
@@ -190,130 +165,119 @@
             position: fixed;
             bottom: 0%;
         }
+        #info-popup {
+            display: none;
+            position: fixed;
+            bottom: 2.5%;
+            padding: 10px;
+            border-radius: 10px;
+        }
     </style>
-    <meta name="description" content="링크를 더 짧게, sqlr.kr">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6290342471056589" crossorigin="anonymous"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6290342471056589"
+        crossorigin="anonymous"></script>
 </head>
+
 <body>
     <header>
-        <a href="https://sqlr.kr"><h1>sqlr.kr</h1></a>
-        <a href="https://sqlr.kr/docs"><h1>Docs</h1></a>
+        <a href="https://sqlr.kr">
+            <h1>sqlr.kr</h1>
+        </a>
+        <a href="https://sqlr.kr/docs">
+            <h1>Docs</h1>
+        </a>
     </header>
     <main>
         <h1><a id="short-link-url" href="">sqlr.kr</a></h1>
         <form action="/shorten" method="post">
             <label for="url">URL</label>
             <input type="url" name="url" id="url" placeholder="https://example.com">
-            <button type="submit">단축하기 🚀</button>
+            <button type="submit">하기 🚀</button>
             <br /><br />
             <div id="qr-code-container"></div>
         </form>
-	<div>
-	    <iframe src="https://snowflake.torproject.org/embed.html" width="320" height="240" frameborder="0" scrolling="no"></iframe>
-	</div>
+        <div>
+            <iframe src="https://snowflake.torproject.org/embed.html" width="320" height="240" frameborder="0"
+                scrolling="no"></iframe>
+        </div>
         <footer>
             <label style="font-size: 15px;">© Sqlare / 커스텀 단축 URL 문의는 me@nergis.dev</label>
         </footer>
-        <div id="info-popup" style="display: none; position: fixed; bottom: 2.5%; padding: 10px; border-radius: 10px; color: white;">
+        <div id="info-popup">
             <p style="font-size: 12pt;">Python 3.10.12 / Ubuntu 22.04.4 LTS</p>
         </div>
     </main>
     <script>
         const footer = document.querySelector('footer');
         const infoPopup = document.getElementById('info-popup');
+        const form = document.querySelector('form');
+        const shortLinkUrl = document.getElementById('short-link-url');
+        const qrCodeContainer = document.getElementById('qr-code-container');
 
         footer.addEventListener('mouseover', () => {
             infoPopup.style.display = 'block';
         });
 
-        // footer 밖으로 마우스가 나갔을 때 팝업을 숨기는 함수
         footer.addEventListener('mouseout', () => {
             infoPopup.style.display = 'none';
         });
 
-        // Get the form element
-        const form = document.querySelector('form');
-    
-        // Get the elements for displaying the shortened URL
-        const shortLinkDiv = document.getElementById('short-link');
-        const shortLinkUrl = document.getElementById('short-link-url');
-    
-        // Get the QR code container
-        const qrCodeContainer = document.getElementById('qr-code-container');
-    
-        let previousURL = ''; // Variable to store the previous URL
-    
-        // Function to update the QR code
         const updateQRCode = async () => {
-            // Get the shortened URL
             const shortenedURL = shortLinkUrl.href;
-
-            // Generate and display the QR code
-
-            // Get the URL input value
             const data = form.querySelector('#url').value;
 
-            // Make a POST request to your FastAPI endpoint
-            const qrCodeResponse = await fetch('/shorten_qr_code', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ data }),
-            });
+            try {
+                const qrCodeResponse = await fetch('/shorten_qr_code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ data }),
+                });
 
-            if (qrCodeResponse.ok) {
-                const qrCodeData = await qrCodeResponse.text();
-                // Clear the previous QR code, if any
-                qrCodeContainer.innerHTML = '';
-                // Add the new QR code to the HTML
-                qrCodeContainer.innerHTML = qrCodeData;
-                // Update the previous URL
-                previousURL = shortenedURL;
-            } else {
-                // Handle error
-                qrCodeContainer.style.display = 'none'; // Hide QR code container on error
+                if (qrCodeResponse.ok) {
+                    const qrCodeData = await qrCodeResponse.text();
+                    qrCodeContainer.innerHTML = '';
+                    qrCodeContainer.innerHTML = qrCodeData;
+                } else {
+                    qrCodeContainer.style.display = 'none';
+                    alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                }
+            } catch (error) {
+                qrCodeContainer.style.display = 'none';
                 alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             }
         };
-    
-        // Add an event listener for the form submission
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-    
-            // Get the URL input value
             const url = form.querySelector('#url').value;
-    
-            // Make a POST request to your FastAPI endpoint
-            const response = await fetch('/shorten', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url }),
-            });
-    
-            if (response.ok) {
-                const data = await response.json();
-    
-                // Display the shortened URL
-                const shortenedURL = data.short_link;
-                shortLinkUrl.href = shortenedURL;
-                shortLinkUrl.textContent = shortenedURL.replace('https://', ''); // Remove 'https://'
-    
-                // Show the QR code container
-                qrCodeContainer.style.display = 'block';
-    
-                // Update the QR code
-                updateQRCode();
-            } else {
-                // Handle error
-                shortLinkDiv.style.display = 'none';
-                qrCodeContainer.style.display = 'none'; // Hide QR code container on error
+
+            try {
+                const response = await fetch('/shorten', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const shortenedURL = data.short_link;
+                    shortLinkUrl.href = shortenedURL;
+                    shortLinkUrl.textContent = shortenedURL.replace('https://', '');
+                    qrCodeContainer.style.display = 'block';
+                    updateQRCode();
+                } else {
+                    qrCodeContainer.style.display = 'none';
+                    alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                }
+            } catch (error) {
+                qrCodeContainer.style.display = 'none';
                 alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             }
         });
-    </script>    
+    </script>
 </body>
+
 </html>
