@@ -1,0 +1,21 @@
+﻿name: sqla-re
+services:
+  sqla-re-server:
+    image: ghcr.io/devnergis/sqla.re:latest
+    container_name: sqla-re-server
+    ports:
+      - "2001:2001"
+    networks:
+      - sqla-re
+    environment:
+      TZ: Asia/Seoul
+  sqla-re-db:
+    image: redis/redis-stack-server:latest
+    container_name: sqla-re-db
+    networks:
+      - sqla-re
+    environment:
+      TZ: Asia/Seoul
+networks:
+  sqla-re:
+    driver: bridge
