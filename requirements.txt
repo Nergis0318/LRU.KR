@@ -7,3 +7,4 @@ python-dotenv
 qrcode
 pydantic
 hypercorn
+pillow
