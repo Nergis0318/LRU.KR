@@ -1,11 +1,13 @@
-FROM python:alpine
+FROM ghcr.io/astral-sh/uv:alpine
 
 WORKDIR /app
 
 COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apk update && apk upgrade
+
+RUN uv sync --frozen --no-cache
 
 EXPOSE 2001
 
-ENTRYPOINT ["python3", "-m", "hypercorn", "main:app", "--bind", "0.0.0.0:2001", "-w", "10"]
+ENTRYPOINT ["uv", "run", "hypercorn", "main:app", "--bind", "0.0.0.0:2001", "-w", "2"]

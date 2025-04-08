@@ -1,17 +1,28 @@
-from fastapi import *
-from fastapi.responses import *
-from fastapi.middleware.cors import *
-from src.function import *
-from src.schema import *
-from src.variable import *
-from redis.commands.json.path import Path
 import base64
+from typing import Optional
+import random
+
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import (
+    HTMLResponse,
+    ORJSONResponse,
+    RedirectResponse,
+    FileResponse,
+)
+import redis.asyncio as redis
+from redis.commands.json.path import Path
+
+from src import *
+
 
 app = FastAPI(
     title="sqla.re",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="sqla.re is a URL shortening service.",
-    version="6.0.0")
+    version="6.0.0",
+)
 
 # noinspection PyTypeChecker
 app.add_middleware(
@@ -22,10 +33,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(GZipMiddleware)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    icon_list = ["IMG_3937.jpg", "IMG_3938.jpg", "IMG_3939.jpg", "IMG_3940.png"]
+    random_icon = random.choice(icon_list)
+    print(random_icon)
+    return FileResponse(f"static/{random_icon}", filename="favicon.ico")
 
 
 # noinspection DuplicatedCode
@@ -34,11 +55,11 @@ async def shorten_link(body: Link):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.url.encode())
 
-    db = redis.Redis(connection_pool=pool(KEY_DB))
+    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
     await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
     await db.close()
 
-    return {"short_link": f"{DOMAIN}/{key}"}
+    return {"short_link": f"{Config.DOMAIN}/{key}"}
 
 
 # noinspection DuplicatedCode
@@ -47,11 +68,11 @@ async def shorten_emoji_link(body: Link):
     key = await anext(generate_emoji_key())
     url_hash = base64.b85encode(body.url.encode())
 
-    db = redis.Redis(connection_pool=pool(EMOJI_DB))
+    db = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
     await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
     await db.close()
 
-    return {"short_link": f"{DOMAIN}/{key}"}
+    return {"short_link": f"{Config.DOMAIN}/{key}"}
 
 
 # noinspection DuplicatedCode
@@ -59,30 +80,38 @@ async def shorten_emoji_link(body: Link):
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode())
-    hgQs = {"url": url_hash.hex()}
+    hg_qs = {"url": url_hash.hex()}
 
-    db = redis.Redis(connection_pool=pool(KEY_DB))
-    await db.json().set(key, Path.root_path(), hgQs)
+    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
+    await db.json().set(key, Path.root_path(), hg_qs)
     await db.close()
 
-    img = generate_qr_code_image(f"{DOMAIN}/{key}", body.version, body.error_correction, body.box_size, body.border,
-                                 body.mask_pattern).read()
+    img = generate_qr_code_image(
+        f"{Config.DOMAIN}/{key}",
+        body.version,
+        body.error_correction,
+        body.box_size,
+        body.border,
+        body.mask_pattern,
+    ).read()
 
     if file:
         return Response(img)
     else:
-        return HTMLResponse(content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />')
+        return HTMLResponse(
+            content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />'
+        )
 
 
 # noinspection PyBroadException
 @app.get("/{short_key}")
 async def redirect_to_original(request: Request, short_key: str):
-    db_c = redis.Redis(connection_pool=pool(KEY_DB))
+    db_c = redis.Redis(connection_pool=pool(Config.KEY_DB))
     db = await db_c.json().jsonget(short_key, Path.root_path())
     await db_c.close()
 
     if db is None:
-        db_c = redis.Redis(connection_pool=pool(EMOJI_DB))
+        db_c = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
         db = await db_c.json().jsonget(short_key, Path.root_path())
         await db_c.close()
 
