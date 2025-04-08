@@ -1,0 +1,18 @@
+[project]
+name = "sqla-re"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "emoji>=2.14.1",
+    "fastapi[all]>=0.115.12",
+    "hypercorn>=0.17.3",
+    "lxml>=5.3.2",
+    "nest-asyncio>=1.6.0",
+    "pillow>=11.1.0",
+    "pydantic>=2.11.2",
+    "python-dotenv>=1.1.0",
+    "qrcode>=8.1",
+    "redis>=5.2.1",
+]
