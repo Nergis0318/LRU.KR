@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN uv lock -n
+RUN uv sync --frozen --no-cache
 
 EXPOSE 2001
 
