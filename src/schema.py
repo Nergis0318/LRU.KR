@@ -1,5 +1,6 @@
 from typing import Union
-from pydantic import *
+
+from pydantic import BaseModel
 
 
 class Link(BaseModel):

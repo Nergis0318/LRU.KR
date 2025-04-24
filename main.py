@@ -1,17 +1,20 @@
+import base64
+
 from fastapi import *
-from fastapi.responses import *
 from fastapi.middleware.cors import *
+from fastapi.responses import *
+from redis.commands.json.path import Path
+
 from src.function import *
 from src.schema import *
 from src.variable import *
-from redis.commands.json.path import Path
-import base64
 
 app = FastAPI(
     title="sqla.re",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="sqla.re is a URL shortening service.",
-    version="6.0.0")
+    version="6.0.0",
+)
 
 # noinspection PyTypeChecker
 app.add_middleware(
@@ -65,13 +68,21 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     await db.json().set(key, Path.root_path(), hgQs)
     await db.close()
 
-    img = generate_qr_code_image(f"{DOMAIN}/{key}", body.version, body.error_correction, body.box_size, body.border,
-                                 body.mask_pattern).read()
+    img = generate_qr_code_image(
+        f"{DOMAIN}/{key}",
+        body.version,
+        body.error_correction,
+        body.box_size,
+        body.border,
+        body.mask_pattern,
+    ).read()
 
     if file:
         return Response(img)
     else:
-        return HTMLResponse(content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />')
+        return HTMLResponse(
+            content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />'
+        )
 
 
 # noinspection PyBroadException

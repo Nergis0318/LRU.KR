@@ -1,4 +1,4 @@
-from fastapi.templating import *
+from fastapi.templating import Jinja2Templates
 import dotenv
 import emoji
 

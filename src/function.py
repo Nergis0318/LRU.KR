@@ -1,12 +1,12 @@
 import io
 import random
 import string
-from typing import *
+from typing import AsyncGenerator
 
 import qrcode
 import redis.asyncio as redis
 
-from .variable import *
+from .variable import DB, templates, emoji_list
 
 
 def pool(db_num: int = 0):
