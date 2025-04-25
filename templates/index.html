@@ -9,7 +9,7 @@
     <style>
         @font-face {
             font-family: "Pretendard Variable";
-            src: url("https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.8/variable/pretendardvariable-dynamic-subset.css");
+            src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
             font-display: auto;
         }
 
@@ -31,7 +31,7 @@
         header {
             width: 100vw;
             height: 10%;
-            display: flex;
+            display: none;
             flex-direction: row;
             align-items: center;
             justify-content: left;
@@ -143,12 +143,6 @@
             text-decoration: underline;
         }
 
-        div img {
-            width: 128px;
-            height: 128px;
-            border-radius: 25px;
-        }
-
         @media (max-width: 768px) {
             header h1 {
                 font-size: 14pt;
@@ -163,6 +157,7 @@
 
         footer {
             position: fixed;
+            display: none;
             bottom: 0%;
         }
         #info-popup {
@@ -179,12 +174,6 @@
 
 <body>
     <header>
-        <a href="https://sqla.re">
-            <h1>sqla.re</h1>
-        </a>
-        <a href="https://sqla.re/docs">
-            <h1>Docs</h1>
-        </a>
     </header>
     <main>
         <h1><a id="short-link-url" href="">sqla.re</a></h1>
@@ -195,10 +184,6 @@
             <br /><br />
             <div id="qr-code-container"></div>
         </form>
-        <div>
-            <iframe src="https://snowflake.torproject.org/embed.html" width="320" height="240" frameborder="0"
-                scrolling="no"></iframe>
-        </div>
         <footer>
             <label style="font-size: 15px;">© Sqlare / 커스텀 단축 URL 문의는 me@nergis.dev</label>
         </footer>
@@ -208,14 +193,9 @@
     </main>
     <script>
         const footer = document.querySelector('footer');
-        const infoPopup = document.getElementById('info-popup');
         const form = document.querySelector('form');
         const shortLinkUrl = document.getElementById('short-link-url');
         const qrCodeContainer = document.getElementById('qr-code-container');
-
-        footer.addEventListener('mouseover', () => {
-            infoPopup.style.display = 'block';
-        });
 
         footer.addEventListener('mouseout', () => {
             infoPopup.style.display = 'none';
@@ -226,7 +206,7 @@
             const data = form.querySelector('#url').value;
 
             try {
-                const qrCodeResponse = await fetch('/shorten_qr_code', {
+                const qrCodeResponse = await fetch('/qr_code', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -266,7 +246,7 @@
                     const shortenedURL = data.short_link;
                     shortLinkUrl.href = shortenedURL;
                     shortLinkUrl.textContent = shortenedURL.replace('https://', '');
-                    qrCodeContainer.style.display = 'block';
+                    qrCodeContainer.style.display = 'flex';
                     updateQRCode();
                 } else {
                     qrCodeContainer.style.display = 'none';
