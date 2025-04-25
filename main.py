@@ -1,8 +1,9 @@
 import base64
+from typing import Optional
 
-from fastapi import *
-from fastapi.middleware.cors import *
-from fastapi.responses import *
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, ORJSONResponse, RedirectResponse, FileResponse
 from redis.commands.json.path import Path
 
 from src.function import *
@@ -62,10 +63,10 @@ async def shorten_emoji_link(body: Link):
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode())
-    hgQs = {"url": url_hash.hex()}
+    hg_qs = {"url": url_hash.hex()}
 
     db = redis.Redis(connection_pool=pool(KEY_DB))
-    await db.json().set(key, Path.root_path(), hgQs)
+    await db.json().set(key, Path.root_path(), hg_qs)
     await db.close()
 
     img = generate_qr_code_image(
