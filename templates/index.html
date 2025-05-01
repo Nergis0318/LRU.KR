@@ -4,12 +4,12 @@
 <head>
     <meta charset="utf-8">
     <title>🔗 ➡️ 💨</title>
-    <meta name="description" content="링크를 더 짧게, sqla.re">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="링크를 더 짧게, sqla.re" name="description">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <style>
         @font-face {
             font-family: "Pretendard Variable";
-            src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css");
+            src: url("https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.8/variable/pretendardvariable-dynamic-subset.css");
             font-display: auto;
         }
 
@@ -31,7 +31,7 @@
         header {
             width: 100vw;
             height: 10%;
-            display: none;
+            display: flex;
             flex-direction: row;
             align-items: center;
             justify-content: left;
@@ -143,6 +143,12 @@
             text-decoration: underline;
         }
 
+        div img {
+            width: 128px;
+            height: 128px;
+            border-radius: 25px;
+        }
+
         @media (max-width: 768px) {
             header h1 {
                 font-size: 14pt;
@@ -157,9 +163,9 @@
 
         footer {
             position: fixed;
-            display: none;
             bottom: 0%;
         }
+
         #info-popup {
             display: none;
             position: fixed;
@@ -168,96 +174,111 @@
             border-radius: 10px;
         }
     </style>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6290342471056589"
-        crossorigin="anonymous"></script>
+    <script async crossorigin="anonymous"
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6290342471056589"></script>
 </head>
 
 <body>
-    <header>
-    </header>
-    <main>
-        <h1><a id="short-link-url" href="">sqla.re</a></h1>
-        <form action="/shorten" method="post">
-            <label for="url">URL</label>
-            <input type="url" name="url" id="url" placeholder="https://example.com">
-            <button type="submit">하기 🚀</button>
-            <br /><br />
-            <div id="qr-code-container"></div>
-        </form>
-        <footer>
-            <label style="font-size: 15px;">© Sqlare / 커스텀 단축 URL 문의는 me@nergis.dev</label>
-        </footer>
-        <div id="info-popup">
-            <p style="font-size: 12pt;">Python 3.10.12 / Ubuntu 22.04.4 LTS</p>
-        </div>
-    </main>
-    <script>
-        const footer = document.querySelector('footer');
-        const form = document.querySelector('form');
-        const shortLinkUrl = document.getElementById('short-link-url');
-        const qrCodeContainer = document.getElementById('qr-code-container');
+<header>
+    <a href="https://sqla.re">
+        <h1>sqla.re</h1>
+    </a>
+    <a href="https://sqla.re/docs">
+        <h1>Docs</h1>
+    </a>
+</header>
+<main>
+    <h1><a href="" id="short-link-url">sqla.re</a></h1>
+    <form action="/shorten" method="post">
+        <label for="url">URL</label>
+        <input id="url" name="url" placeholder="https://example.com" type="url">
+        <button type="submit">하기 🚀</button>
+        <br/><br/>
+        <div id="qr-code-container"></div>
+    </form>
+    <div>
+        <iframe frameborder="0" height="240" scrolling="no" src="https://snowflake.torproject.org/embed.html"
+                width="320"></iframe>
+    </div>
+    <footer>
+        <label style="font-size: 15px;">© Sqlare / 커스텀 단축 URL 문의는 me@nergis.dev</label>
+    </footer>
+    <div id="info-popup">
+        <p style="font-size: 12pt;">Python 3.10.12 / Ubuntu 22.04.4 LTS</p>
+    </div>
+</main>
+<script>
+    const footer = document.querySelector('footer');
+    const infoPopup = document.getElementById('info-popup');
+    const form = document.querySelector('form');
+    const shortLinkUrl = document.getElementById('short-link-url');
+    const qrCodeContainer = document.getElementById('qr-code-container');
 
-        footer.addEventListener('mouseout', () => {
-            infoPopup.style.display = 'none';
-        });
+    footer.addEventListener('mouseover', () => {
+        infoPopup.style.display = 'block';
+    });
 
-        const updateQRCode = async () => {
-            const shortenedURL = shortLinkUrl.href;
-            const data = form.querySelector('#url').value;
+    footer.addEventListener('mouseout', () => {
+        infoPopup.style.display = 'none';
+    });
 
-            try {
-                const qrCodeResponse = await fetch('/shorten_qr_code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ data }),
-                });
+    const updateQRCode = async () => {
+        const shortenedURL = shortLinkUrl.href;
+        const data = form.querySelector('#url').value;
 
-                if (qrCodeResponse.ok) {
-                    const qrCodeData = await qrCodeResponse.text();
-                    qrCodeContainer.innerHTML = '';
-                    qrCodeContainer.innerHTML = qrCodeData;
-                } else {
-                    qrCodeContainer.style.display = 'none';
-                    alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                }
-            } catch (error) {
+        try {
+            const qrCodeResponse = await fetch('/shorten_qr_code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({data}),
+            });
+
+            if (qrCodeResponse.ok) {
+                const qrCodeData = await qrCodeResponse.text();
+                qrCodeContainer.innerHTML = '';
+                qrCodeContainer.innerHTML = qrCodeData;
+            } else {
                 qrCodeContainer.style.display = 'none';
                 alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             }
-        };
+        } catch (error) {
+            qrCodeContainer.style.display = 'none';
+            alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+    };
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const url = form.querySelector('#url').value;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = form.querySelector('#url').value;
 
-            try {
-                const response = await fetch('/shorten', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url }),
-                });
+        try {
+            const response = await fetch('/shorten', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({url}),
+            });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const shortenedURL = data.short_link;
-                    shortLinkUrl.href = shortenedURL;
-                    shortLinkUrl.textContent = shortenedURL.replace('https://', '');
-                    qrCodeContainer.style.display = 'flex';
-                    updateQRCode();
-                } else {
-                    qrCodeContainer.style.display = 'none';
-                    alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-                }
-            } catch (error) {
+            if (response.ok) {
+                const data = await response.json();
+                const shortenedURL = data.short_link;
+                shortLinkUrl.href = shortenedURL;
+                shortLinkUrl.textContent = shortenedURL.replace('https://', '');
+                qrCodeContainer.style.display = 'block';
+                updateQRCode();
+            } else {
                 qrCodeContainer.style.display = 'none';
                 alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
             }
-        });
-    </script>
+        } catch (error) {
+            qrCodeContainer.style.display = 'none';
+            alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        }
+    });
+</script>
 </body>
 
 </html>
