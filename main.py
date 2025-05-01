@@ -1,5 +1,6 @@
 import base64
 from typing import Optional
+import random
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,7 +44,10 @@ async def root(request: Request):
 
 @app.get("/favicon.ico")
 async def favicon():
-    return FileResponse("./templates/favicon.ico")
+    icon_list = ["IMG_3937.jpg", "IMG_3938.jpg", "IMG_3939.jpg", "IMG_3940.png"]
+    random_icon = random.choice(icon_list)
+    print(random_icon)
+    return FileResponse(f"static/{random_icon}", filename="favicon.ico")
 
 # noinspection DuplicatedCode
 @app.post("/shorten", response_class=ORJSONResponse)
