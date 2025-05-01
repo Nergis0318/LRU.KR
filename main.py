@@ -41,6 +41,10 @@ async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("./templates/favicon.ico")
+
 # noinspection DuplicatedCode
 @app.post("/shorten", response_class=ORJSONResponse)
 async def shorten_link(body: Link):
