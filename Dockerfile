@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update && apk upgrade && apk add build-base
+RUN apk update && apk upgrade && apk add build-base musl-dev
 
 RUN uv sync --frozen --no-cache
 
