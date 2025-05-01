@@ -628,7 +628,6 @@ dependencies = [
     { name = "qrcode" },
     { name = "redis" },
     { name = "ruff" },
-    { name = "zstd" },
 ]
 
 [package.metadata]
@@ -644,7 +643,6 @@ requires-dist = [
     { name = "qrcode", specifier = ">=8.1" },
     { name = "redis", specifier = ">=5.2.1" },
     { name = "ruff", specifier = ">=0.11.6" },
-    { name = "zstd", specifier = ">=1.5.6.8" },
 ]
 
 [[package]]
@@ -804,14 +802,4 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c9/4a/44d3c295350d776427904d73c189e10aeae66d7f555bb2feee16d1e4ba5a/wsproto-1.2.0.tar.gz", hash = "sha256:ad565f26ecb92588a3e43bc3d96164de84cd9902482b130d0ddbaa9664a85065", size = 53425, upload-time = "2022-08-23T19:58:21.447Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/78/58/e860788190eba3bcce367f74d29c4675466ce8dddfba85f7827588416f01/wsproto-1.2.0-py3-none-any.whl", hash = "sha256:b9acddd652b585d75b20477888c56642fdade28bdfd3579aa24a4d2c037dd736", size = 24226, upload-time = "2022-08-23T19:58:19.96Z" },
-]
-
-[[package]]
-name = "zstd"
-version = "1.5.6.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4c/8d/231c0415de9ea4dace067f6b17527a5b6974e7dcfa4bf11c2ad1dbfbb109/zstd-1.5.6.8.tar.gz", hash = "sha256:2ea1c8c54567ab2fd7906923fadbd0d2147a32750db8402d55d458eb86017d76", size = 652944, upload-time = "2025-05-01T09:15:30.565Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/5b/169b443c8fca05797fe30f8e981edf75f0e0386b610b4581d4ac2f672573/zstd-1.5.6.8-cp313-cp313-manylinux_2_14_x86_64.whl", hash = "sha256:b279f457ec5bed8fbeac17cc4a90c893e3a0b041930e9872c811f6aaad57de3e", size = 1950575, upload-time = "2025-05-01T09:16:16.603Z" },
-    { url = "https://files.pythonhosted.org/packages/d7/4d/86fdbb1a28be8d84bc40f703a10a7895fa9f3f6c8ac38cdf238d3bb4b066/zstd-1.5.6.8-cp314-cp314-manylinux_2_34_x86_64.whl", hash = "sha256:5831d168bea37937c2bc4eb1a0f052e6fa6b871b188874e461092cbf75ca58cc", size = 1741003, upload-time = "2025-05-01T09:19:30.523Z" },
 ]
