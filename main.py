@@ -15,7 +15,7 @@ from redis.commands.json.path import Path
 from src.function import *
 from src.schema import *
 from src.variable import *
-from src.zstd import ZstdMiddleware
+
 
 app = FastAPI(
     title="sqla.re",
