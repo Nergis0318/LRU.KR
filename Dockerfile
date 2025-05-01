@@ -4,6 +4,8 @@ WORKDIR /app
 
 COPY . .
 
+RUN apk update && apk upgrade && apk add zstd make cmake
+
 RUN uv sync --frozen --no-cache
 
 EXPOSE 2001
