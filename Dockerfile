@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update && apk upgrade && apk add zstd make cmake
+RUN apk update && apk upgrade && apk add clang make cmake
 
 RUN uv sync --frozen --no-cache
 
