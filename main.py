@@ -3,7 +3,6 @@ from typing import Optional
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import (
     HTMLResponse,
     ORJSONResponse,
@@ -15,6 +14,7 @@ from redis.commands.json.path import Path
 from src.function import *
 from src.schema import *
 from src.variable import *
+from src.zstd import ZstdMiddleware
 
 app = FastAPI(
     title="sqla.re",
@@ -32,7 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(GZipMiddleware)
+app.add_middleware(ZstdMiddleware)
 
 
 @app.get("/", response_class=HTMLResponse)
