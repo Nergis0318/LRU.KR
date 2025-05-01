@@ -1,5 +1,5 @@
 from fastapi.templating import Jinja2Templates
-import dotenv
+import os
 import emoji
 
 templates = Jinja2Templates(directory="templates")
@@ -10,7 +10,7 @@ emoji_list = list()
 for _ in emoji_data:
     emoji_list.append(_[0])
 
-DOMAIN = dotenv.get_key("/.env", "DOMAIN")
-DB = dotenv.get_key("/.env", "DB")
-EMOJI_DB = dotenv.get_key("/.env", "EMOJI_DB")
-KEY_DB = dotenv.get_key("/.env", "KEY_DB")
+DOMAIN = os.environ.get("DOMAIN")
+DB = os.environ.get("DB")
+EMOJI_DB = os.environ.get("EMOJI_DB")
+KEY_DB = os.environ.get("KEY_DB")

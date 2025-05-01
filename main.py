@@ -3,7 +3,12 @@ from typing import Optional
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, ORJSONResponse, RedirectResponse, FileResponse
+from fastapi.responses import (
+    HTMLResponse,
+    ORJSONResponse,
+    RedirectResponse,
+    FileResponse,
+)
 from redis.commands.json.path import Path
 
 from src.function import *
