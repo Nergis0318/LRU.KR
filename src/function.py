@@ -32,7 +32,7 @@ async def generate_key(length: int = 4) -> AsyncGenerator:
         key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(__length__))
 
         db = redis.Redis(connection_pool=pool())
-        db_key = await db.json().get(key)
+        db_key = await db.get(key)
         await db.close()
 
         if db_key is None:
@@ -48,7 +48,7 @@ async def generate_emoji_key(length: int = 4) -> AsyncGenerator:
         key = ''.join(random.choice(emoji_list) for _ in range(length))
 
         db = redis.Redis(connection_pool=pool())
-        db_key = await db.json().get(key)
+        db_key = await db.get(key)
         await db.close()
 
         if db_key is None:
