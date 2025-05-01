@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update && apk upgrade && apk add build-base musl-dev clang lld compiler-rt
+RUN apk update && apk upgrade
 
 RUN uv sync --frozen --no-cache
 
