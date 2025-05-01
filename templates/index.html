@@ -6,6 +6,7 @@
     <title>🔗 ➡️ 💨</title>
     <meta content="링크를 더 짧게, sqla.re" name="description">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.1/qrcode.min.js"></script>
     <style>
         @font-face {
             font-family: "Pretendard Variable";
@@ -83,6 +84,7 @@
 
         input[type="url"] {
             width: 80%;
+            max-width: 400px; /* 최대 너비 설정 */
             height: 20px;
             padding: 10px;
             margin-bottom: 10px;
@@ -97,23 +99,20 @@
             padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
+            transition: background-color 0.3s ease; /* 부드러운 전환 효과 */
         }
 
         button[type="submit"]:hover {
             background-color: #2A313F;
         }
 
-        #short-link {
-            display: none;
+        #short-link-display { /* ID 변경 및 스타일 */
             margin-top: 20px;
-        }
-
-        #short-link p {
             font-weight: bold;
         }
 
         #short-link-url {
-            color: #007bff;
+            color: #60a5fa; /* Tailwind blue-400 */
             text-decoration: none;
         }
 
@@ -143,35 +142,55 @@
             text-decoration: underline;
         }
 
-        div img {
-            width: 128px;
-            height: 128px;
-            border-radius: 25px;
+        /* QR 코드 캔버스 컨테이너 스타일 */
+        #qr-code-container {
+            margin-top: 20px;
+            display: none; /* 기본적으로 숨김 */
+            background-color: white; /* QR 코드가 잘 보이도록 배경색 추가 */
+            padding: 10px; /* 안쪽 여백 */
+            border-radius: 10px; /* 둥근 모서리 */
+            display: inline-block; /* 내용에 맞게 크기 조절 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
         }
+
+        #qr-code-canvas {
+             display: block; /* 캔버스 자체의 불필요한 여백 제거 */
+             border-radius: 5px; /* 캔버스에도 약간의 둥근 모서리 */
+        }
+
 
         @media (max-width: 768px) {
             header h1 {
                 font-size: 14pt;
             }
+             input[type="url"] {
+                width: 90%; /* 모바일에서 너비 조정 */
+            }
         }
 
         @media (min-width: 769px) {
             body {
-                font-size: 130%;
+                font-size: 110%; /* 데스크탑 폰트 크기 약간 조정 */
             }
         }
 
         footer {
             position: fixed;
-            bottom: 0%;
+            bottom: 10px; /* 약간 위로 조정 */
+            width: 100%;
+            text-align: center;
         }
 
         #info-popup {
             display: none;
             position: fixed;
-            bottom: 2.5%;
-            padding: 10px;
-            border-radius: 10px;
+            bottom: 40px; /* 푸터 위에 표시되도록 조정 */
+            left: 50%;
+            transform: translateX(-50%); /* 가운데 정렬 */
+            background-color: rgba(47, 54, 70, 0.9); /* 배경 약간 투명하게 */
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
     </style>
     <script async crossorigin="anonymous"
@@ -183,37 +202,48 @@
     <a href="https://sqla.re">
         <h1>sqla.re</h1>
     </a>
-    <a href="https://sqla.re/docs">
-        <h1>Docs</h1>
-    </a>
+    <ul>
+        <li><a href="https://sqla.re/docs">Docs</a></li>
+        </ul>
 </header>
 <main>
-    <h1><a href="" id="short-link-url">sqla.re</a></h1>
-    <form action="/shorten" method="post">
-        <label for="url">URL</label>
-        <input id="url" name="url" placeholder="https://example.com" type="url">
-        <button type="submit">하기 🚀</button>
-        <br/><br/>
-        <div id="qr-code-container"></div>
+    <div id="short-link-display">
+        <a href="#" id="short-link-url" target="_blank"></a>
+    </div>
+
+    <div id="qr-code-container">
+        <canvas id="qr-code-canvas"></canvas>
+    </div>
+
+    <form id="shorten-form">
+        <label for="url">단축할 URL 입력:</label>
+        <input id="url" name="url" placeholder="https://example.com" type="url" required>
+        <button type="submit">단축하기 🚀</button>
     </form>
+
     <div>
         <iframe frameborder="0" height="240" scrolling="no" src="https://snowflake.torproject.org/embed.html"
                 width="320"></iframe>
     </div>
+
     <footer>
         <label style="font-size: 15px;">© Sqlare / 커스텀 단축 URL 문의는 me@nergis.dev</label>
     </footer>
     <div id="info-popup">
-        <p style="font-size: 12pt;">Python 3.13.3 / Alpine 3.21.3</p>
+        <p style="font-size: 12pt; margin: 0;">Python 3.13 / Alpine 3.21</p>
     </div>
 </main>
 <script>
     const footer = document.querySelector('footer');
     const infoPopup = document.getElementById('info-popup');
-    const form = document.querySelector('form');
-    const shortLinkUrl = document.getElementById('short-link-url');
+    const form = document.getElementById('shorten-form'); // 폼 ID 사용
+    const urlInput = document.getElementById('url');
+    const shortLinkDisplay = document.getElementById('short-link-display');
+    const shortLinkUrlElement = document.getElementById('short-link-url');
     const qrCodeContainer = document.getElementById('qr-code-container');
+    const qrCodeCanvas = document.getElementById('qr-code-canvas');
 
+    // Footer hover 시 정보 팝업 표시/숨김
     footer.addEventListener('mouseover', () => {
         infoPopup.style.display = 'block';
     });
@@ -222,62 +252,99 @@
         infoPopup.style.display = 'none';
     });
 
-    const updateQRCode = async () => {
-        const shortenedURL = shortLinkUrl.href;
-        const data = form.querySelector('#url').value;
+    // 클라이언트 측에서 QR 코드를 생성하고 캔버스에 그리는 함수
+    const generateQRCode = (urlToEncode) => {
+        if (!urlToEncode) {
+            console.error('QR 코드를 생성할 URL이 없습니다.');
+            qrCodeContainer.style.display = 'none'; // URL 없으면 숨김
+            return;
+        }
 
         try {
-            const qrCodeResponse = await fetch('/shorten_qr_code', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({data}),
+            // QRCode.toCanvas(canvasElement, text, [options], [callback])
+            QRCode.toCanvas(qrCodeCanvas, urlToEncode, {
+                width: 160, // QR 코드 크기 지정 (캔버스 크기와 맞추거나 조절)
+                margin: 1, // QR 코드 여백
+                errorCorrectionLevel: 'H' // 오류 복원 수준 (L, M, Q, H)
+            }, function (error) {
+                if (error) {
+                    console.error('QR 코드 생성 오류:', error);
+                    alert('QR 코드를 생성하는 중 오류가 발생했습니다.');
+                    qrCodeContainer.style.display = 'none'; // 오류 시 숨김
+                } else {
+                    console.log('QR 코드 생성 성공!');
+                    qrCodeContainer.style.display = 'inline-block'; // 성공 시 표시 (inline-block으로 변경)
+                }
             });
-
-            if (qrCodeResponse.ok) {
-                const qrCodeData = await qrCodeResponse.text();
-                qrCodeContainer.innerHTML = '';
-                qrCodeContainer.innerHTML = qrCodeData;
-            } else {
-                qrCodeContainer.style.display = 'none';
-                alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-            }
         } catch (error) {
-            qrCodeContainer.style.display = 'none';
-            alert('QR 코드를 생성하는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            console.error('QR 코드 라이브러리 실행 오류:', error);
+            alert('QR 코드 생성 중 예외가 발생했습니다.');
+            qrCodeContainer.style.display = 'none'; // 예외 시 숨김
         }
     };
 
+    // 폼 제출 이벤트 리스너
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const url = form.querySelector('#url').value;
+        e.preventDefault(); // 기본 제출 동작 방지
+        const originalUrl = urlInput.value;
+
+        // 입력값 유효성 검사 (간단하게)
+        if (!originalUrl || !originalUrl.startsWith('http')) {
+            alert('유효한 URL을 입력해주세요 (http:// 또는 https:// 로 시작)');
+            return;
+        }
+
+        // 버튼 비활성화 (중복 제출 방지)
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = '처리 중...';
 
         try {
+            // 서버에 단축 URL 요청
             const response = await fetch('/shorten', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({url}),
+                body: JSON.stringify({ url: originalUrl }), // 'url' 키 사용 확인
             });
 
             if (response.ok) {
                 const data = await response.json();
-                const shortenedURL = data.short_link;
-                shortLinkUrl.href = shortenedURL;
-                shortLinkUrl.textContent = shortenedURL.replace('https://', '');
-                qrCodeContainer.style.display = 'block';
-                updateQRCode();
+                const shortenedURL = data.short_link; // 응답 키 확인
+
+                // 단축 URL 표시 업데이트
+                shortLinkUrlElement.href = shortenedURL;
+                shortLinkUrlElement.textContent = shortenedURL.replace(/^https?:\/\//, ''); // http(s):// 제거
+                shortLinkDisplay.style.display = 'block'; // 단축 URL 영역 표시
+
+                // 클라이언트 측 QR 코드 생성 함수 호출
+                generateQRCode(shortenedURL);
+
             } else {
-                qrCodeContainer.style.display = 'none';
+                // 서버 오류 처리
+                console.error('단축 URL 생성 실패:', response.status, await response.text());
                 alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                shortLinkDisplay.style.display = 'none'; // 오류 시 숨김
+                qrCodeContainer.style.display = 'none'; // 오류 시 숨김
             }
         } catch (error) {
-            qrCodeContainer.style.display = 'none';
-            alert('URL을 줄이는 동안 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            // 네트워크 오류 또는 기타 예외 처리
+            console.error('단축 요청 중 오류 발생:', error);
+            alert('URL 처리 중 네트워크 오류 또는 예외가 발생했습니다.');
+            shortLinkDisplay.style.display = 'none'; // 오류 시 숨김
+            qrCodeContainer.style.display = 'none'; // 오류 시 숨김
+        } finally {
+             // 버튼 다시 활성화
+            submitButton.disabled = false;
+            submitButton.textContent = '단축하기 🚀';
         }
     });
+
+     // 페이지 로드 시 초기화 (옵션)
+     shortLinkDisplay.style.display = 'none';
+     qrCodeContainer.style.display = 'none';
+
 </script>
 </body>
 
