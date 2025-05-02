@@ -10,7 +10,9 @@ emoji_list = list()
 for _ in emoji_data:
     emoji_list.append(_[0])
 
-DOMAIN = os.environ.get("DOMAIN")
-DB = os.environ.get("DB")
-EMOJI_DB = os.environ.get("EMOJI_DB")
-KEY_DB = os.environ.get("KEY_DB")
+
+class Config():
+    DOMAIN = os.environ.get("DOMAIN")
+    DB = os.environ.get("DB")
+    EMOJI_DB = os.environ.get("EMOJI_DB")
+    KEY_DB = os.environ.get("KEY_DB")

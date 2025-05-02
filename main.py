@@ -11,11 +11,10 @@ from fastapi.responses import (
     RedirectResponse,
     FileResponse,
 )
+import redis.asyncio as redis
 from redis.commands.json.path import Path
 
-from src.function import *
-from src.schema import *
-from src.variable import *
+from src import *
 
 
 app = FastAPI(
@@ -49,17 +48,18 @@ async def favicon():
     print(random_icon)
     return FileResponse(f"static/{random_icon}", filename="favicon.ico")
 
+
 # noinspection DuplicatedCode
 @app.post("/shorten", response_class=ORJSONResponse)
 async def shorten_link(body: Link):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.url.encode())
 
-    db = redis.Redis(connection_pool=pool(KEY_DB))
+    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
     await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
     await db.close()
 
-    return {"short_link": f"{DOMAIN}/{key}"}
+    return {"short_link": f"{Config.DOMAIN}/{key}"}
 
 
 # noinspection DuplicatedCode
@@ -68,11 +68,11 @@ async def shorten_emoji_link(body: Link):
     key = await anext(generate_emoji_key())
     url_hash = base64.b85encode(body.url.encode())
 
-    db = redis.Redis(connection_pool=pool(EMOJI_DB))
+    db = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
     await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
     await db.close()
 
-    return {"short_link": f"{DOMAIN}/{key}"}
+    return {"short_link": f"{Config.DOMAIN}/{key}"}
 
 
 # noinspection DuplicatedCode
@@ -82,12 +82,12 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     url_hash = base64.b85encode(body.data.encode())
     hg_qs = {"url": url_hash.hex()}
 
-    db = redis.Redis(connection_pool=pool(KEY_DB))
+    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
     await db.json().set(key, Path.root_path(), hg_qs)
     await db.close()
 
     img = generate_qr_code_image(
-        f"{DOMAIN}/{key}",
+        f"{Config.DOMAIN}/{key}",
         body.version,
         body.error_correction,
         body.box_size,
@@ -106,12 +106,12 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
 # noinspection PyBroadException
 @app.get("/{short_key}")
 async def redirect_to_original(request: Request, short_key: str):
-    db_c = redis.Redis(connection_pool=pool(KEY_DB))
+    db_c = redis.Redis(connection_pool=pool(Config.KEY_DB))
     db = await db_c.json().jsonget(short_key, Path.root_path())
     await db_c.close()
 
     if db is None:
-        db_c = redis.Redis(connection_pool=pool(EMOJI_DB))
+        db_c = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
         db = await db_c.json().jsonget(short_key, Path.root_path())
         await db_c.close()
 
