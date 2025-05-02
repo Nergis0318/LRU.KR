@@ -6,7 +6,7 @@ from typing import AsyncGenerator
 import qrcode
 import redis.asyncio as redis
 
-from .variable import DB, templates, emoji_list
+from .variable import Config, templates, emoji_list
 
 
 def pool(db_num: int = 0):
@@ -18,7 +18,7 @@ def pool(db_num: int = 0):
     Returns:
         ConnectionPool: Redis ConnectionPool
     """
-    return redis.ConnectionPool().from_url(f"{DB}/{db_num}")
+    return redis.ConnectionPool().from_url(f"{Config.DB}/{db_num}")
 
 
 # noinspection PyPep8Naming
