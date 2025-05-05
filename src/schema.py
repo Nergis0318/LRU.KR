@@ -7,6 +7,10 @@ class Link(BaseModel):
     url: str
 
 
+class CustomLink(Link):
+    custom_key: str
+
+
 class LinkQRCODE(BaseModel):
     data: str
     version: Union[int, None] = 1
