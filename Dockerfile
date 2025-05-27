@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update && apk upgrade
+RUN apk update --no-cache && apk upgrade --no-cache
 
 RUN uv sync --frozen --no-cache
 
