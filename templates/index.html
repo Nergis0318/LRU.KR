@@ -218,6 +218,12 @@
     <form id="shorten-form">
         <label for="url">단축할 URL 입력:</label>
         <input id="url" name="url" placeholder="https://example.com" type="url" required>
+        <div style="margin: 10px 0;">
+            <label style="font-size: 13px;">
+                <input type="checkbox" id="emoji-option" name="emoji-option" style="vertical-align: middle;">
+                <span style="vertical-align: middle;">이모지로 단축하기 🐣</span>
+            </label>
+        </div>
         <button type="submit">단축하기 🚀</button>
     </form>
 
@@ -242,6 +248,7 @@
     const shortLinkUrlElement = document.getElementById('short-link-url');
     const qrCodeContainer = document.getElementById('qr-code-container');
     const qrCodeCanvas = document.getElementById('qr-code-canvas');
+    const emojiOption = document.getElementById('emoji-option');
 
     // Footer hover 시 정보 팝업 표시/숨김
     footer.addEventListener('mouseover', () => {
@@ -285,8 +292,9 @@
 
     // 폼 제출 이벤트 리스너
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // 기본 제출 동작 방지
+        e.preventDefault();
         const originalUrl = urlInput.value;
+        const useEmoji = emojiOption && emojiOption.checked;
 
         // 입력값 유효성 검사 (간단하게)
         if (!originalUrl || !originalUrl.startsWith('http')) {
@@ -301,12 +309,13 @@
 
         try {
             // 서버에 단축 URL 요청
-            const response = await fetch('/shorten', {
+            const endpoint = useEmoji ? '/shorten_emoji' : '/shorten';
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ url: originalUrl }), // 'url' 키 사용 확인
+                body: JSON.stringify({ url: originalUrl }),
             });
 
             if (response.ok) {
