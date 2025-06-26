@@ -6,19 +6,7 @@ from typing import AsyncGenerator
 import qrcode
 import redis.asyncio as redis
 
-from .variable import Config, templates, emoji_list
-
-
-def pool(db_num: int = 0):
-    """Redis_Pool
-
-    Args:
-        db_num (int, optional): The minimum value is 0. Defaults to 0.
-
-    Returns:
-        ConnectionPool: Redis ConnectionPool
-    """
-    return redis.ConnectionPool().from_url(f"{Config.DB}/{db_num}")
+from .variable import templates, emoji_list, key_db_pool, emoji_db_pool
 
 
 # noinspection PyPep8Naming
@@ -26,14 +14,13 @@ def HTTP_404(request: object):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 
-async def generate_key(length: int = 4) -> AsyncGenerator:
+async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:
     __length__ = length
     while True:
         key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(__length__))
 
-        db = redis.Redis(connection_pool=pool())
+        db = redis.Redis(connection_pool=key_db_pool)
         db_key = await db.json().get(key)
-        await db.close()
 
         if db_key is None:
             yield key
@@ -42,14 +29,13 @@ async def generate_key(length: int = 4) -> AsyncGenerator:
             __length__ += 1
 
 
-async def generate_emoji_key(length: int = 4) -> AsyncGenerator:
+async def generate_emoji_key(length: int = 4) -> AsyncGenerator[str, None]:
     __length__ = length
     while True:
         key = ''.join(random.choice(emoji_list) for _ in range(length))
 
-        db = redis.Redis(connection_pool=pool())
+        db = redis.Redis(connection_pool=emoji_db_pool)
         db_key = await db.json().get(key)
-        await db.close()
 
         if db_key is None:
             yield key

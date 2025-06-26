@@ -1,5 +1,6 @@
 import base64
-from typing import Optional
+import asyncio
+from typing import Optional, Callable, Awaitable, AsyncGenerator
 import random
 
 from fastapi import FastAPI, Request, Response
@@ -36,6 +37,16 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware)
 
 
+async def create_short_link(key_generator: Callable[[], AsyncGenerator[str, None]], pool, url: str):
+    key = await anext(key_generator())
+    url_hash = base64.b85encode(url.encode())
+
+    db = redis.Redis(connection_pool=pool)
+    await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
+
+    return {"short_link": f"{Config.DOMAIN}/{key}"}
+
+
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -49,71 +60,52 @@ async def favicon():
     return FileResponse(f"static/{random_icon}", filename="favicon.ico")
 
 
-# noinspection DuplicatedCode
 @app.post("/shorten", response_class=ORJSONResponse)
 async def shorten_link(body: Link):
-    key = await anext(generate_key())
-    url_hash = base64.b85encode(body.url.encode())
-
-    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
-    await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
-    await db.close()
-
-    return {"short_link": f"{Config.DOMAIN}/{key}"}
+    return await create_short_link(generate_key, key_db_pool, body.url)
 
 
-# noinspection DuplicatedCode
 @app.post("/shorten_emoji", response_class=ORJSONResponse)
 async def shorten_emoji_link(body: Link):
-    key = await anext(generate_emoji_key())
-    url_hash = base64.b85encode(body.url.encode())
-
-    db = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
-    await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
-    await db.close()
-
-    return {"short_link": f"{Config.DOMAIN}/{key}"}
+    return await create_short_link(generate_emoji_key, emoji_db_pool, body.url)
 
 
-# noinspection DuplicatedCode
 @app.post("/shorten_qr_code", response_class=FileResponse)
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode())
     hg_qs = {"url": url_hash.hex()}
 
-    db = redis.Redis(connection_pool=pool(Config.KEY_DB))
+    db = redis.Redis(connection_pool=key_db_pool)
     await db.json().set(key, Path.root_path(), hg_qs)
-    await db.close()
 
-    img = generate_qr_code_image(
+    img_bytes = await asyncio.to_thread(
+        generate_qr_code_image,
         f"{Config.DOMAIN}/{key}",
         body.version,
         body.error_correction,
         body.box_size,
         body.border,
         body.mask_pattern,
-    ).read()
+    )
 
     if file:
-        return Response(img)
+        return Response(img_bytes.getvalue())
     else:
         return HTMLResponse(
-            content=f'<img src="data:image/png;base64,{base64.b64encode(img).decode()}" />'
+            content=f'<img src="data:image/png;base64,{base64.b64encode(img_bytes.getvalue()).decode()}" />'
         )
 
 
 # noinspection PyBroadException
 @app.get("/{short_key}")
 async def redirect_to_original(request: Request, short_key: str):
-    db_c = redis.Redis(connection_pool=pool(Config.KEY_DB))
+    db_c = redis.Redis(connection_pool=key_db_pool)
     db = await db_c.json().jsonget(short_key, Path.root_path())
-    await db_c.close()
 
     if db is None:
-        db_c = redis.Redis(connection_pool=pool(Config.EMOJI_DB))
+        db_c = redis.Redis(connection_pool=emoji_db_pool)
         db = await db_c.json().jsonget(short_key, Path.root_path())
-        await db_c.close()
 
     try:
         url = bytes.fromhex(db["url"]).decode("utf-8")

@@ -1,6 +1,8 @@
 from fastapi.templating import Jinja2Templates
+from fastapi.templating import Jinja2Templates
 import os
 import emoji
+import redis.asyncio as redis
 
 templates = Jinja2Templates(directory="templates")
 
@@ -16,3 +18,6 @@ class Config():
     DB = os.environ.get("DB")
     EMOJI_DB = os.environ.get("EMOJI_DB")
     KEY_DB = os.environ.get("KEY_DB")
+
+key_db_pool = redis.ConnectionPool.from_url(f"{Config.DB}/{Config.KEY_DB}")
+emoji_db_pool = redis.ConnectionPool.from_url(f"{Config.DB}/{Config.EMOJI_DB}")
