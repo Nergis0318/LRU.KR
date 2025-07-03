@@ -79,7 +79,7 @@ async def root(request: Request):
 
 @app.get("/favicon.ico")
 async def favicon():
-    icon_list = ["IMG_3937.jpg", "IMG_3938.jpg", "IMG_3939.jpg", "IMG_3940.png"]
+    icon_list = ["IMG_3937.jpg", "IMG_3938.jpg", "IMG_3939.jpg", "IMG_3940.png", "favicon.ico"]
     random_icon = random.choice(icon_list)
     print(random_icon)
     return FileResponse(f"static/{random_icon}", filename="favicon.ico")
