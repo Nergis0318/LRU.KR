@@ -21,6 +21,7 @@ from src import (
     generate_key,
     HTTP_404,
     generate_qr_code_image,
+    generate_number_key,
     Link,
     LinkQRCODE,
     CustomLink,
@@ -35,7 +36,7 @@ app = FastAPI(
     title="sqla.re",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="sqla.re is a URL shortening service.",
-    version="6.0.0",
+    version="6.1.0",
 )
 
 api_key_header = APIKeyHeader(name="X-API-KEY")
@@ -88,6 +89,11 @@ async def favicon():
 @app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(body: Link):
     return await create_short_link(generate_key, key_db_pool, body.url)
+
+
+@app.post("/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
+async def shorten_number_link(body: Link):
+    return await create_short_link(generate_number_key, key_db_pool, body.url)
 
 
 @app.post("/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
