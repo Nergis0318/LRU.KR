@@ -108,7 +108,7 @@ async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_k
     return {"short_link": f"{Config.DOMAIN}/{body.custom_key}"}
 
 
-@app.post("/shorten_qr_code", response_class=FileResponse)
+@app.post("/shorten/qr", response_class=FileResponse)
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode())

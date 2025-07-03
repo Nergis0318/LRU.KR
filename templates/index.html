@@ -309,7 +309,7 @@
 
         try {
             // 서버에 단축 URL 요청
-            const endpoint = useEmoji ? '/shorten_emoji' : '/shorten';
+            const endpoint = useEmoji ? '/shorten/emoji' : '/shorten';
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
