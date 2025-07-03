@@ -141,8 +141,7 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
         )
 
 
-# noinspection PyBroadException
-@app.get("/{short_key}")
+@app.get("/{short_key}", tags=["Redirect"])
 async def redirect_to_original(request: Request, short_key: str):
     db_c = redis.Redis(connection_pool=key_db_pool)
     db = await db_c.json().jsonget(short_key, Path.root_path())
