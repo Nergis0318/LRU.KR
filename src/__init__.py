@@ -1,3 +1,3 @@
-from .function import generate_emoji_key, generate_key, HTTP_404, generate_qr_code_image
-from .schema import Link, LinkQRCODE
-from .variable import emoji_list, templates, Config, key_db_pool, emoji_db_pool
+from .function import generate_emoji_key, generate_key, HTTP_404, generate_qr_code_image  # noqa: F401
+from .schema import Link, LinkQRCODE, CustomLink # noqa: F401
+from .variable import templates, Config, key_db_pool, emoji_db_pool # noqa: F401

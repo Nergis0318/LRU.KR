@@ -1,9 +1,10 @@
 import base64
 import asyncio
-from typing import Optional, Callable, Awaitable, AsyncGenerator
+from typing import Optional, Callable, AsyncGenerator
 import random
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
+from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import (
@@ -15,7 +16,19 @@ from fastapi.responses import (
 import redis.asyncio as redis
 from redis.commands.json.path import Path
 
-from src import *
+from src import (
+    generate_emoji_key,
+    generate_key,
+    HTTP_404,
+    generate_qr_code_image,
+    Link,
+    LinkQRCODE,
+    CustomLink,
+    templates,
+    Config,
+    key_db_pool,
+    emoji_db_pool,
+)
 
 
 app = FastAPI(
@@ -24,6 +37,8 @@ app = FastAPI(
     description="sqla.re is a URL shortening service.",
     version="6.0.0",
 )
+
+api_key_header = APIKeyHeader(name="X-API-KEY")
 
 # noinspection PyTypeChecker
 app.add_middleware(
@@ -37,7 +52,17 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware)
 
 
-async def create_short_link(key_generator: Callable[[], AsyncGenerator[str, None]], pool, url: str):
+async def get_api_key(api_key: str = Depends(api_key_header)):
+    if api_key != Config.CU_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
+        )
+    return api_key
+
+
+async def create_short_link(
+    key_generator: Callable[[], AsyncGenerator[str, None]], pool, url: str
+):
     key = await anext(key_generator())
     url_hash = base64.b85encode(url.encode())
 
@@ -65,9 +90,22 @@ async def shorten_link(body: Link):
     return await create_short_link(generate_key, key_db_pool, body.url)
 
 
-@app.post("/shorten_emoji", response_class=ORJSONResponse)
+@app.post("/shorten/emoji", response_class=ORJSONResponse)
 async def shorten_emoji_link(body: Link):
     return await create_short_link(generate_emoji_key, emoji_db_pool, body.url)
+
+
+@app.post("/shorten/custom", response_class=ORJSONResponse)
+async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_key)):
+    db = redis.Redis(connection_pool=key_db_pool)
+    if await db.exists(body.custom_key):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Custom key already exists"
+        )
+
+    url_hash = base64.b85encode(body.url.encode())
+    await db.json().set(body.custom_key, Path.root_path(), {"url": url_hash.hex()})
+    return {"short_link": f"{Config.DOMAIN}/{body.custom_key}"}
 
 
 @app.post("/shorten_qr_code", response_class=FileResponse)
@@ -111,5 +149,5 @@ async def redirect_to_original(request: Request, short_key: str):
         url = bytes.fromhex(db["url"]).decode("utf-8")
         url = base64.b85decode(url).decode("utf-8")
         return RedirectResponse(url)
-    except:
+    except:  # noqa: E722
         return HTTP_404(request)
