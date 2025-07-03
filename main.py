@@ -85,17 +85,17 @@ async def favicon():
     return FileResponse(f"static/{random_icon}", filename="favicon.ico")
 
 
-@app.post("/shorten", response_class=ORJSONResponse)
+@app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(body: Link):
     return await create_short_link(generate_key, key_db_pool, body.url)
 
 
-@app.post("/shorten/emoji", response_class=ORJSONResponse)
+@app.post("/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_emoji_link(body: Link):
     return await create_short_link(generate_emoji_key, emoji_db_pool, body.url)
 
 
-@app.post("/shorten/custom", response_class=ORJSONResponse)
+@app.post("/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_key)):
     db = redis.Redis(connection_pool=key_db_pool)
     if await db.exists(body.custom_key):
@@ -108,7 +108,7 @@ async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_k
     return {"short_link": f"{Config.DOMAIN}/{body.custom_key}"}
 
 
-@app.post("/shorten/qr", response_class=FileResponse)
+@app.post("/shorten/qr", response_class=FileResponse, tags=["Shorten"])
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode())
