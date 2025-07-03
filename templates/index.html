@@ -229,15 +229,34 @@
           type="url"
           required
         />
-        <div style="margin: 10px 0">
-          <label style="font-size: 13px">
+        <div
+          style="
+            margin: 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+          "
+        >
+          <label style="font-size: 13px; cursor: pointer">
             <input
               type="checkbox"
               id="emoji-option"
-              name="emoji-option"
+              name="shorten-type"
+              value="emoji"
               style="vertical-align: middle"
             />
             <span style="vertical-align: middle">이모지로 단축하기 🐣</span>
+          </label>
+          <label style="font-size: 13px; cursor: pointer">
+            <input
+              type="checkbox"
+              id="number-option"
+              name="shorten-type"
+              value="number"
+              style="vertical-align: middle"
+            />
+            <span style="vertical-align: middle">숫자로 단축하기 🔢</span>
           </label>
         </div>
         <button type="submit">단축하기 🚀</button>
@@ -262,6 +281,21 @@
       const qrCodeContainer = document.getElementById("qr-code-container");
       const qrCodeCanvas = document.getElementById("qr-code-canvas");
       const emojiOption = document.getElementById("emoji-option");
+      const numberOption = document.getElementById("number-option");
+
+      // 체크박스 그룹화 및 단일 선택 처리
+      const checkboxes = [emojiOption, numberOption];
+      checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            checkboxes.forEach((otherCheckbox) => {
+              if (otherCheckbox !== checkbox) {
+                otherCheckbox.checked = false;
+              }
+            });
+          }
+        });
+      });
 
       // Footer hover 시 정보 팝업 표시/숨김
       footer.addEventListener("mouseover", () => {
@@ -313,6 +347,7 @@
         e.preventDefault();
         const originalUrl = urlInput.value;
         const useEmoji = emojiOption && emojiOption.checked;
+        const useNumber = numberOption && numberOption.checked;
 
         // 입력값 유효성 검사 (간단하게)
         if (!originalUrl || !originalUrl.startsWith("http")) {
@@ -327,7 +362,13 @@
 
         try {
           // 서버에 단축 URL 요청
-          const endpoint = useEmoji ? "/shorten/emoji" : "/shorten";
+          let endpoint = "/shorten";
+          if (useEmoji) {
+            endpoint = "/shorten/emoji";
+          } else if (useNumber) {
+            endpoint = "/shorten/number";
+          }
+
           const response = await fetch(endpoint, {
             method: "POST",
             headers: {
