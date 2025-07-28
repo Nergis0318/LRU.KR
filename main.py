@@ -142,11 +142,7 @@ async def redirect_to_original(request: Request, short_key: str):
     db = await get_redis()
     data = await db.json().get(short_key, root_path)
 
-    if not data:
-        return HTTP_404(request)
-
     try:
-        url = base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8")
-        return RedirectResponse(url)
-    except (ValueError, KeyError):
+        return RedirectResponse(base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8"))
+    except:
         return HTTP_404(request)
