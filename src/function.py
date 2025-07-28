@@ -6,7 +6,18 @@ from typing import AsyncGenerator
 import qrcode
 import redis.asyncio as redis
 
-from .variable import templates, emoji_list, key_db_pool, emoji_db_pool
+from .variable import templates, emoji_list, db_pool
+
+redis_client = None
+ascii_digits = string.ascii_letters + string.digits
+digits = string.digits
+
+
+async def get_redis():
+    global redis_client
+    if redis_client is None:
+        redis_client = redis.Redis(connection_pool=db_pool)
+    return redis_client
 
 
 # noinspection PyPep8Naming
@@ -15,70 +26,41 @@ def HTTP_404(request: object):
 
 
 async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:
-    __length__ = length
+    db = await get_redis()
     while True:
-        key = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(__length__))
-
-        db = redis.Redis(connection_pool=key_db_pool)
-        db_key = await db.json().get(key)
-
-        if db_key is None:
+        key = ''.join(random.choices(ascii_digits, k=length))
+        if not await db.exists(key):
             yield key
             break
-        else:
-            __length__ += 1
+        length += 1
 
 
 async def generate_number_key(length: int = 4) -> AsyncGenerator[str, None]:
-    __length__ = length
+    db = await get_redis()
     while True:
-        key = ''.join(random.choice(string.digits) for _ in range(__length__))
-
-        db = redis.Redis(connection_pool=key_db_pool)
-        db_key = await db.json().get(key)
-
-        if db_key is None:
+        key = ''.join(random.choices(digits, k=length))
+        if not await db.exists(key):
             yield key
             break
-        else:
-            __length__ += 1
+        length += 1
 
 
 async def generate_emoji_key(length: int = 4) -> AsyncGenerator[str, None]:
-    __length__ = length
+    db = await get_redis()
     while True:
-        key = ''.join(random.choice(emoji_list) for _ in range(__length__))
-
-        db = redis.Redis(connection_pool=emoji_db_pool)
-        db_key = await db.json().get(key)
-
-        if db_key is None:
+        key = ''.join(random.choices(emoji_list, k=length))
+        if not await db.exists(key):
             yield key
             break
-        else:
-            __length__ += 1
+        length += 1
 
 
+# noinspection PyTypeChecker
 def generate_qr_code_image(data: str, version: int = 1, error_correction: int = 0, box_size: int = 10, border: int = 4,
                            mask_pattern: int = 0):
-    """generate_qr_code_image
-
-    Args:
-        data (str): qrcode data.
-        version (int, optional): 1 ~ 40. Defaults to None.
-        error_correction (int, optional): ERROR_CORRECT_L = 1, ERROR_CORRECT_M = 0, ERROR_CORRECT_Q = 3, ERROR_CORRECT_H = 2 (L< M < Q < H). Defaults to 0.
-        box_size (int, optional): qrcode size. Defaults to 10.
-        border (int, optional): qrcode blank size. Defaults to 4.
-        mask_pattern (_type_, optional): 0 ~ 7. Defaults to None.
-
-    Returns:
-        BytesIO: img_byte
-    """
-
     img = qrcode.make(data, version=version, error_correction=error_correction, box_size=box_size, border=border,
                       image_factory=None, mask_pattern=mask_pattern)
     img_byte_array = io.BytesIO()
     img.save(img_byte_array)
     img_byte_array.seek(0)
-
     return img_byte_array

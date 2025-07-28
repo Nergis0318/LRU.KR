@@ -1,10 +1,8 @@
-import base64
 import asyncio
+import base64
 from typing import Optional, Callable, AsyncGenerator
-import random
 
 from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
-from fastapi.security import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import (
@@ -13,7 +11,7 @@ from fastapi.responses import (
     RedirectResponse,
     FileResponse,
 )
-import redis.asyncio as redis
+from fastapi.security import APIKeyHeader
 from redis.commands.json.path import Path
 
 from src import (
@@ -27,19 +25,16 @@ from src import (
     CustomLink,
     templates,
     Config,
-    key_db_pool,
-    emoji_db_pool,
+    get_redis,
 )
-
 
 app = FastAPI(
-    title="sqla.re",
+    title="LRU",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
-    description="sqla.re is a URL shortening service.",
-    version="6.1.0",
+    description="LRU is a URL shortening service.",
+    version="6.7.3",
 )
 
-api_key_header = APIKeyHeader(name="X-API-KEY")
 
 # noinspection PyTypeChecker
 app.add_middleware(
@@ -52,9 +47,13 @@ app.add_middleware(
 
 app.add_middleware(GZipMiddleware)
 
+api_key_header = APIKeyHeader(name="X-API-KEY")
+domain_prefix = f"{Config.DOMAIN}/"
+root_path = Path.root_path()
+
 
 async def get_api_key(api_key: str = Depends(api_key_header)):
-    if api_key != Config.CU_KEY:
+    if api_key != Config.API_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API Key"
         )
@@ -62,15 +61,15 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
 
 
 async def create_short_link(
-    key_generator: Callable[[], AsyncGenerator[str, None]], pool, url: str
+    key_generator: Callable[[], AsyncGenerator[str, None]], url: str
 ):
     key = await anext(key_generator())
-    url_hash = base64.b85encode(url.encode())
+    url_hash = base64.b85encode(url.encode()).hex()
 
-    db = redis.Redis(connection_pool=pool)
-    await db.json().set(key, Path.root_path(), {"url": url_hash.hex()})
+    db = await get_redis()
+    await db.json().set(key, root_path, {"url": url_hash})
 
-    return {"short_link": f"{Config.DOMAIN}/{key}"}
+    return {"short_link": domain_prefix + key}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -80,52 +79,49 @@ async def root(request: Request):
 
 @app.get("/favicon.ico")
 async def favicon():
-    icon_list = ["IMG_3937.jpg", "IMG_3938.jpg", "IMG_3939.jpg", "IMG_3940.png", "favicon.ico"]
-    random_icon = random.choice(icon_list)
-    print(random_icon)
-    return FileResponse(f"static/{random_icon}", filename="favicon.ico")
+    return FileResponse("static/favicon.ico", filename="favicon.ico")
 
 
 @app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(body: Link):
-    return await create_short_link(generate_key, key_db_pool, body.url)
+    return await create_short_link(generate_key, body.url)
 
 
 @app.post("/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_number_link(body: Link):
-    return await create_short_link(generate_number_key, key_db_pool, body.url)
+    return await create_short_link(generate_number_key, body.url)
 
 
 @app.post("/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_emoji_link(body: Link):
-    return await create_short_link(generate_emoji_key, emoji_db_pool, body.url)
+    return await create_short_link(generate_emoji_key, body.url)
 
 
+# noinspection PyUnusedLocal
 @app.post("/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_key)):
-    db = redis.Redis(connection_pool=key_db_pool)
+    db = await get_redis()
     if await db.exists(body.custom_key):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Custom key already exists"
         )
 
-    url_hash = base64.b85encode(body.url.encode())
-    await db.json().set(body.custom_key, Path.root_path(), {"url": url_hash.hex()})
-    return {"short_link": f"{Config.DOMAIN}/{body.custom_key}"}
+    url_hash = base64.b85encode(body.url.encode()).hex()
+    await db.json().set(body.custom_key, root_path, {"url": url_hash})
+    return {"short_link": domain_prefix + body.custom_key}
 
 
 @app.post("/shorten/qr", response_class=FileResponse, tags=["Shorten"])
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
-    url_hash = base64.b85encode(body.data.encode())
-    hg_qs = {"url": url_hash.hex()}
+    url_hash = base64.b85encode(body.data.encode()).hex()
 
-    db = redis.Redis(connection_pool=key_db_pool)
-    await db.json().set(key, Path.root_path(), hg_qs)
+    db = await get_redis()
+    await db.json().set(key, root_path, {"url": url_hash})
 
     img_bytes = await asyncio.to_thread(
         generate_qr_code_image,
-        f"{Config.DOMAIN}/{key}",
+        domain_prefix + key,
         body.version,
         body.error_correction,
         body.box_size,
@@ -143,16 +139,14 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
 
 @app.get("/{short_key}", tags=["Redirect"])
 async def redirect_to_original(request: Request, short_key: str):
-    db_c = redis.Redis(connection_pool=key_db_pool)
-    db = await db_c.json().jsonget(short_key, Path.root_path())
+    db = await get_redis()
+    data = await db.json().get(short_key, root_path)
 
-    if db is None:
-        db_c = redis.Redis(connection_pool=emoji_db_pool)
-        db = await db_c.json().jsonget(short_key, Path.root_path())
+    if not data:
+        return HTTP_404(request)
 
     try:
-        url = bytes.fromhex(db["url"]).decode("utf-8")
-        url = base64.b85decode(url).decode("utf-8")
+        url = base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8")
         return RedirectResponse(url)
-    except:  # noqa: E722
+    except (ValueError, KeyError):
         return HTTP_404(request)
