@@ -69,10 +69,16 @@
             <div id="result-container" class="hidden flex flex-col items-center gap-6">
                 <div id="short-link-display" class="w-full p-4 bg-slate-800 rounded-lg flex items-center justify-between gap-4">
                     <a href="#" id="short-link-url" target="_blank" class="text-lg font-bold accent-text hover:underline truncate"></a>
-                    <button id="copy-button" class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">Copy</button>
+                    <button id="copy-button" class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">복사하기</button>
                 </div>
-                <div id="qr-code-container" class="bg-white p-2 rounded-lg shadow-lg">
+                <div id="qr-code-container" class="bg-white p-2 rounded-lg shadow-lg flex flex-col items-center gap-2">
                     <canvas id="qr-code-canvas"></canvas>
+                    <button id="download-qr-button" class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        QR 다운로드
+                    </button>
                 </div>
             </div>
 
@@ -128,6 +134,7 @@
             const qrCodeContainer = document.getElementById("qr-code-container");
             const qrCodeCanvas = document.getElementById("qr-code-canvas");
             const copyButton = document.getElementById("copy-button");
+            const downloadQrButton = document.getElementById("download-qr-button"); // New: QR download button
             const emojiOption = document.getElementById("emoji-option");
             const numberOption = document.getElementById("number-option");
             const checkboxes = [emojiOption, numberOption];
@@ -171,6 +178,8 @@
                     qrCodeContainer.style.display = "none";
                     return;
                 }
+                // Update to show the container
+                qrCodeContainer.style.display = "flex";
                 QRCode.toCanvas(qrCodeCanvas, urlToEncode, {
                     width: 160,
                     margin: 1,
@@ -185,14 +194,13 @@
                         showNotification("QR 코드 생성에 실패했습니다.");
                         qrCodeContainer.style.display = "none";
                     } else {
-                        qrCodeContainer.style.display = "block";
+                        qrCodeContainer.style.display = "flex";
                     }
                 });
             }
-
+            
             // --- Copy to Clipboard ---
             copyButton.addEventListener('click', () => {
-                // Using document.execCommand for wider compatibility in iframe environments
                 const tempInput = document.createElement('input');
                 tempInput.value = shortLinkUrlElement.href;
                 document.body.appendChild(tempInput);
@@ -201,7 +209,7 @@
                     document.execCommand('copy');
                     showNotification('복사되었습니다!', false);
                     copyButton.textContent = 'Copied!';
-                    setTimeout(() => { copyButton.textContent = 'Copy'; }, 2000);
+                    setTimeout(() => { copyButton.textContent = '복사하기'; }, 2000);
                 } catch (err) {
                     console.error('Failed to copy: ', err);
                     showNotification('복사에 실패했습니다.');
@@ -209,12 +217,23 @@
                 document.body.removeChild(tempInput);
             });
 
+            // --- QR Code Download Logic ---
+            downloadQrButton.addEventListener('click', () => {
+                const dataURL = qrCodeCanvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'lru_qr_code.png';
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+
+
             // --- Form Submission Handler ---
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const originalUrl = urlInput.value;
 
-                // Allow any protocol by checking for "://"
                 if (!originalUrl || !originalUrl.includes("://")) {
                     showNotification("유효한 URL 형식이어야 합니다 (예: protocol://example.com)");
                     return;
