@@ -82,6 +82,11 @@ async def favicon():
     return FileResponse("static/favicon.ico", filename="favicon.ico")
 
 
+@app.get("/robots.txt")
+async def robots():
+    return FileResponse("static/robots.txt", filename="robots.txt")
+
+
 @app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(body: Link):
     return await create_short_link(generate_key, body.url)
