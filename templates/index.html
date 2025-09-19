@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="kr">
+
 <head>
     <meta charset="utf-8" />
     <title>링크를 더 짧고, 더 간결하게. LRU</title>
-    <meta content="링크를 더 짧고, 더 간결하게. LRU.KR" name="description" />
-    <meta content="url.kr, URL ,LRU, Link Shortener, URL Shortener, URL 단축, 링크 단축, 이모지 단축, 숫자 단축, URL단축, 링크단축, 이모지단축, 숫자단축, 링크 단축, URL 단축, 짧은 링크 만들기, 링크 관리, URL 단축 서비스, 소셜 미디어 링크 단축, QR 코드 만들기, 트래킹 링크, 무료 링크 단축기, 효율적인 링크 공유, 링크 단축, URL 단축기, 짧은 링크 생성, 링크 공유, 링크 추적, SNS 링크 단축, QR코드 링크, 간편한 링크 단축, 비즈니스 링크 관리" name="keywords" />
+    <meta content="링크를 더 짧고, 더 간결하게. LRU.KR - 무료 URL 단축 서비스" name="description" />
+    <meta
+        content="url.kr, URL ,LRU, Link Shortener, URL Shortener, URL 단축, 링크 단축, 이모지 단축, 숫자 단축, URL단축, 링크단축, 이모지단축, 숫자단축, 링크 단축, URL 단축, 짧은 링크 만들기, 링크 관리, URL 단축 서비스, 소셜 미디어 링크 단축, QR 코드 만들기, 트래킹 링크, 무료 링크 단축기, 효율적인 링크 공유, 링크 단축, URL 단축기, 짧은 링크 생성, 링크 공유, 링크 추적, SNS 링크 단축, QR코드 링크, 간편한 링크 단축, 비즈니스 링크 관리"
+        name="keywords" />
     <meta content="A85LABS" name="author" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="링크를 더 짧고, 더 간결하게. LRU" />
+    <meta property="og:description" content="링크를 더 짧고, 더 간결하게. LRU.KR - 무료 URL 단축 서비스" />
+    <meta property="og:url" content="https://lru.kr" />
+    <meta property="og:site_name" content="LRU.KR" />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="링크를 더 짧고, 더 간결하게. LRU" />
+    <meta name="twitter:description" content="링크를 더 짧고, 더 간결하게. LRU.KR - 무료 URL 단축 서비스" />
 
     <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -20,7 +36,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6290342471056589"
-     crossorigin="anonymous"></script>
+        crossorigin="anonymous"></script>
+
+    <!-- Naver Site Verification -->
     <meta name="naver-site-verification" content="342b680840034778370bdc772b845d2edb104fb5" />
 
     <!-- Custom Styles and Font (Pretendard) -->
@@ -30,23 +48,36 @@
             src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/variable/pretendardvariable-dynamic-subset.css");
             font-display: swap;
         }
+
         body {
             font-family: "Pretendard Variable", "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
         /* Custom Accent Color */
-        .accent-bg { background-color: #aaaaff; }
-        .accent-bg-hover:hover { background-color: #9999f5; }
-        .accent-text { color: #aaaaff; }
+        .accent-bg {
+            background-color: #aaaaff;
+        }
+
+        .accent-bg-hover:hover {
+            background-color: #9999f5;
+        }
+
+        .accent-text {
+            color: #aaaaff;
+        }
+
         .accent-ring:focus {
             --tw-ring-color: #aaaaff;
         }
-        .peer:checked ~ .custom-checkbox-visual {
+
+        .peer:checked~.custom-checkbox-visual {
             background-color: #aaaaff;
             border-color: #aaaaff;
         }
-        .peer:checked ~ .custom-checkbox-visual > svg {
+
+        .peer:checked~.custom-checkbox-visual>svg {
             display: block;
         }
     </style>
@@ -55,13 +86,15 @@
 <body class="bg-slate-900 text-slate-300 flex flex-col items-center justify-between min-h-screen p-4">
 
     <!-- Notification popup to replace alerts -->
-    <div id="notification" class="fixed top-5 right-5 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-all duration-300 pointer-events-none z-50">
+    <div id="notification"
+        class="fixed top-5 right-5 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-all duration-300 pointer-events-none z-50">
         <span id="notification-message"></span>
     </div>
 
     <!-- Header Section -->
     <header class="w-full max-w-6xl mx-auto flex justify-between items-center py-4">
-        <a href="https://LRU.KR" class="text-2xl sm:text-3xl font-black tracking-tighter text-white hover:opacity-80 transition">LRU</a>
+        <a href="https://LRU.KR"
+            class="text-2xl sm:text-3xl font-black tracking-tighter text-white hover:opacity-80 transition">LRU</a>
         <nav>
             <a href="https://LRU.KR/docs" class="text-slate-400 hover:text-white transition-colors">Docs</a>
         </nav>
@@ -73,15 +106,21 @@
 
             <!-- Result Display Area -->
             <div id="result-container" class="hidden flex flex-col items-center gap-6">
-                <div id="short-link-display" class="w-full p-4 bg-slate-800 rounded-lg flex items-center justify-between gap-4">
-                    <a href="#" id="short-link-url" target="_blank" class="text-lg font-bold accent-text hover:underline truncate"></a>
-                    <button id="copy-button" class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">복사하기</button>
+                <div id="short-link-display"
+                    class="w-full p-4 bg-slate-800 rounded-lg flex items-center justify-between gap-4">
+                    <a href="#" id="short-link-url" target="_blank"
+                        class="text-lg font-bold accent-text hover:underline truncate"></a>
+                    <button id="copy-button"
+                        class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors">복사하기</button>
                 </div>
                 <div id="qr-code-container" class="bg-white p-2 rounded-lg shadow-lg flex flex-col items-center gap-2">
                     <canvas id="qr-code-canvas"></canvas>
-                    <button id="download-qr-button" class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <button id="download-qr-button"
+                        class="px-3 py-1.5 text-sm font-semibold bg-slate-700 hover:bg-slate-600 rounded-md transition-colors text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         QR 다운로드
                     </button>
@@ -94,27 +133,39 @@
                 <p class="text-slate-400 mb-4">URL을 붙여넣고 원하는 방식으로 단축해보세요.</p>
 
                 <div class="relative">
-                    <input id="url" name="url" placeholder="https://example.com" type="url" required class="w-full px-5 py-4 bg-slate-800/80 border border-slate-700 rounded-lg focus:ring-2 accent-ring focus:outline-none transition-all placeholder-slate-500 text-white" />
+                    <input id="url" name="url" placeholder="https://example.com" type="url" required
+                        class="w-full px-5 py-4 bg-slate-800/80 border border-slate-700 rounded-lg focus:ring-2 accent-ring focus:outline-none transition-all placeholder-slate-500 text-white" />
                 </div>
 
                 <div class="flex justify-center items-center gap-4 sm:gap-6">
                     <label class="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="checkbox" id="emoji-option" name="shorten-type" value="emoji" class="peer sr-only" />
-                        <div class="custom-checkbox-visual w-5 h-5 border-2 border-slate-600 rounded-md flex items-center justify-center transition-all">
-                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-900 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <input type="checkbox" id="emoji-option" name="shorten-type" value="emoji"
+                            class="peer sr-only" />
+                        <div
+                            class="custom-checkbox-visual w-5 h-5 border-2 border-slate-600 rounded-md flex items-center justify-center transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-900 hidden" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
                         </div>
                         <span>이모지로 단축하기 🐣</span>
                     </label>
                     <label class="flex items-center gap-2 cursor-pointer text-sm">
-                        <input type="checkbox" id="number-option" name="shorten-type" value="number" class="peer sr-only" />
-                        <div class="custom-checkbox-visual w-5 h-5 border-2 border-slate-600 rounded-md flex items-center justify-center transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-900 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <input type="checkbox" id="number-option" name="shorten-type" value="number"
+                            class="peer sr-only" />
+                        <div
+                            class="custom-checkbox-visual w-5 h-5 border-2 border-slate-600 rounded-md flex items-center justify-center transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-slate-900 hidden" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
                         </div>
                         <span>숫자로 단축하기 🔢</span>
                     </label>
                 </div>
 
-                <button type="submit" class="w-full py-4 accent-bg accent-bg-hover text-slate-900 font-bold rounded-lg transition-colors disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-base">
+                <button type="submit"
+                    class="w-full py-4 accent-bg accent-bg-hover text-slate-900 font-bold rounded-lg transition-colors disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-base">
                     단축하기 🚀
                 </button>
             </form>
@@ -124,7 +175,8 @@
     <!-- Footer Section -->
     <footer class="w-full max-w-6xl mx-auto text-center py-6 relative group">
         <p class="text-sm text-slate-500">© A85LABS / 커스텀 단축 URL 문의는 me@nergis.dev</p>
-        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-slate-700 text-white text-xs rounded-md px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <div
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-slate-700 text-white text-xs rounded-md px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
             Python 3.13 / Alpine 3.21
         </div>
     </footer>
@@ -204,7 +256,7 @@
                     }
                 });
             }
-            
+
             // --- Copy to Clipboard ---
             copyButton.addEventListener('click', () => {
                 const tempInput = document.createElement('input');
@@ -288,4 +340,5 @@
         });
     </script>
 </body>
+
 </html>
