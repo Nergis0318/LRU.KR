@@ -298,9 +298,9 @@
 
                 const useEmoji = emojiOption.checked;
                 const useNumber = numberOption.checked;
-                let endpoint = "/shorten";
-                if (useEmoji) endpoint = "/shorten/emoji";
-                else if (useNumber) endpoint = "/shorten/number";
+                let endpoint = "/api/shorten";
+                if (useEmoji) endpoint = "/api/shorten/emoji";
+                else if (useNumber) endpoint = "/api/shorten/number";
 
                 try {
                     const response = await fetch(endpoint, {

@@ -87,23 +87,23 @@ async def robots():
     return FileResponse("static/robots.txt", filename="robots.txt")
 
 
-@app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])
+@app.post("/api/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(body: Link):
     return await create_short_link(generate_key, body.url)
 
 
-@app.post("/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
+@app.post("/api/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_number_link(body: Link):
     return await create_short_link(generate_number_key, body.url)
 
 
-@app.post("/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
+@app.post("/api/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_emoji_link(body: Link):
     return await create_short_link(generate_emoji_key, body.url)
 
 
 # noinspection PyUnusedLocal
-@app.post("/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
+@app.post("/api/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_key)):
     db = await get_redis()
     if await db.exists(body.custom_key):
@@ -116,7 +116,7 @@ async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_k
     return {"short_link": domain_prefix + body.custom_key}
 
 
-@app.post("/shorten/qr", response_class=FileResponse, tags=["Shorten"])
+@app.post("/api/shorten/qr", response_class=FileResponse, tags=["Shorten"])
 async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode()).hex()
