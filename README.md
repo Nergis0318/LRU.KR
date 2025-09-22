@@ -1,4 +1,5 @@
-# LRU
+# LRU.KR
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDevNergis%2FLRU.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FDevNergis%2FLRU?ref=badge_shield)
 
 가볍고 빠른 Python FastAPI + Redis 기반 오픈소스 URL 단축 서비스.

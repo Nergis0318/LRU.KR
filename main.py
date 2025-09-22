@@ -29,10 +29,10 @@ from src import (
 )
 
 app = FastAPI(
-    title="LRU",
+    title="LRU.KR",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
-    description="LRU is a URL shortening service.",
-    version="6.7.3",
+    description="LRU.KR is a URL shortening service.",
+    version="6.7.4",
 )
 
 
@@ -80,6 +80,11 @@ async def root(request: Request):
 @app.get("/favicon.ico")
 async def favicon():
     return FileResponse("static/favicon.ico", filename="favicon.ico")
+
+
+@app.get("/robots.txt")
+async def robots():
+    return FileResponse("static/robots.txt", filename="robots.txt")
 
 
 @app.post("/shorten", response_class=ORJSONResponse, tags=["Shorten"])

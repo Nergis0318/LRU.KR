@@ -25,7 +25,7 @@ def HTTP_404(request: object):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 
-async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:
+async def generate_key(length: int = 1) -> AsyncGenerator[str, None]:
     db = await get_redis()
     while True:
         key = ''.join(random.choices(ascii_digits, k=length))
@@ -35,7 +35,7 @@ async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:
         length += 1
 
 
-async def generate_number_key(length: int = 4) -> AsyncGenerator[str, None]:
+async def generate_number_key(length: int = 1) -> AsyncGenerator[str, None]:
     db = await get_redis()
     while True:
         key = ''.join(random.choices(digits, k=length))
@@ -45,7 +45,7 @@ async def generate_number_key(length: int = 4) -> AsyncGenerator[str, None]:
         length += 1
 
 
-async def generate_emoji_key(length: int = 4) -> AsyncGenerator[str, None]:
+async def generate_emoji_key(length: int = 1) -> AsyncGenerator[str, None]:
     db = await get_redis()
     while True:
         key = ''.join(random.choices(emoji_list, k=length))
