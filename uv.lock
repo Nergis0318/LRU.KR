@@ -718,7 +718,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sqla-re"
+name = "lru-kr"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

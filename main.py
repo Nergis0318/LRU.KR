@@ -29,10 +29,10 @@ from src import (
 )
 
 app = FastAPI(
-    title="LRU",
+    title="LRU.KR",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
-    description="LRU is a URL shortening service.",
-    version="6.7.3",
+    description="LRU.KR is a URL shortening service.",
+    version="6.7.4",
 )
 
 
