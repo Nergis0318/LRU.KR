@@ -3,7 +3,7 @@ name = "lru-kr"
 version = "6.7.4"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "emoji>=2.14.1",
     "fastapi[all]>=0.115.12",

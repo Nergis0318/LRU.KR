@@ -1,7 +1,7 @@
 ﻿name: lru-kr
 services:
   lru-kr-server:
-    image: ghcr.io/devnergis/sqla.re:latest
+    image: ghcr.io/devnergis/lru.kr:latest
     container_name: lru-kr-server
     ports:
       - "2001:2001"
