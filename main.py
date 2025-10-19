@@ -149,5 +149,5 @@ async def redirect_to_original(request: Request, short_key: str):
 
     try:
         return RedirectResponse(base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8"))
-    except:
+    except:  # noqa: E722
         return HTTP_404(request)
