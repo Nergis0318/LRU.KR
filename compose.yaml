@@ -3,8 +3,10 @@ services:
   lru-kr-server:
     image: ghcr.io/devnergis/lru.kr:latest
     container_name: lru-kr-server
+    labels:
+      io.containers.autoupdate: image
     ports:
-      - "2001:2001"
+      - 2001:2001
     env_file:
       - .env
     networks:
@@ -17,6 +19,10 @@ services:
   lru-kr-db:
     image: docker.io/redis/redis-stack-server:latest
     container_name: lru-kr-db
+    labels:
+      io.containers.autoupdate: image
+    ports:
+      - 26379:6379
     volumes:
       - ${DB_LOCATION}:/data
     env_file:
