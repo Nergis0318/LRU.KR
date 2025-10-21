@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update --no-cache && apk upgrade --no-cache && apk add --no-cache build-base rust cargo
+RUN apk update --no-cache && apk upgrade --no-cache && apk add --no-cache build-base rust cargo curl
 
 RUN uv sync --frozen --no-cache
 
