@@ -18,3 +18,8 @@ class LinkQRCODE(BaseModel):
     box_size: Union[int, None] = 10
     border: Union[int, None] = 4
     mask_pattern: Union[int, None] = 0
+
+class TossUrl(BaseModel):
+    bank_name: str
+    account_number: str
+    account_holder: str

@@ -4,7 +4,7 @@ import string
 from typing import AsyncGenerator
 
 import qrcode
-import redis.asyncio as redis
+import valkey.asyncio as valkey
 
 from .variable import templates, emoji_list, db_pool
 
@@ -16,7 +16,7 @@ digits = string.digits
 async def get_redis():
     global redis_client
     if redis_client is None:
-        redis_client = redis.Redis(connection_pool=db_pool)
+        redis_client = valkey.Valkey(connection_pool=db_pool)
     return redis_client
 
 
@@ -25,7 +25,7 @@ def HTTP_404(request: object):
     return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
 
 
-async def generate_key(length: int = 1) -> AsyncGenerator[str, None]:
+async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:
     db = await get_redis()
     while True:
         key = ''.join(random.choices(ascii_digits, k=length))
@@ -35,7 +35,7 @@ async def generate_key(length: int = 1) -> AsyncGenerator[str, None]:
         length += 1
 
 
-async def generate_number_key(length: int = 1) -> AsyncGenerator[str, None]:
+async def generate_number_key(length: int = 4) -> AsyncGenerator[str, None]:
     db = await get_redis()
     while True:
         key = ''.join(random.choices(digits, k=length))
