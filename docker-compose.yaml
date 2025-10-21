@@ -14,6 +14,8 @@ services:
   lru-kr-db:
     image: redis/redis-stack-server:latest
     container_name: lru-kr-db
+    env_file:
+      - .env
     networks:
       - lru-kr
     environment:
