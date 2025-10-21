@@ -12,7 +12,7 @@ services:
     environment:
       TZ: Asia/Seoul
   lru-kr-db:
-    image: redis/redis-stack-server:latest
+    image: docker.io/redis/redis-stack-server:latest
     container_name: lru-kr-db
     env_file:
       - .env
