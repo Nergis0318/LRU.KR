@@ -31,4 +31,3 @@ services:
     restart: always
 networks:
   lru-kr:
-    driver: bridge
