@@ -17,7 +17,7 @@ services:
       test: curl http://0.0.0.0:2001 || exit 1
     restart: always
   lru-kr-db:
-    image: docker.io/valkey/valkey:alpine
+    image: docker.io/valkey/valkey-bundle:alpine
     container_name: lru-kr-db
     labels:
       io.containers.autoupdate: image
