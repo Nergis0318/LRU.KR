@@ -17,7 +17,7 @@ services:
       test: curl http://0.0.0.0:2001 || exit 1
     restart: always
   lru-kr-db:
-    image: docker.io/redis/redis-stack-server:latest
+    image: docker.io/valkey/valkey:alpine
     container_name: lru-kr-db
     labels:
       io.containers.autoupdate: image
@@ -33,7 +33,7 @@ services:
       TZ: Asia/Seoul
       REDIS_ARGS: --requirepass ${DB_PASSWORD}
     healthcheck:
-      test: redis-cli ping || exit 1
+      test: valkey-cli ping || exit 1
     restart: always
 networks:
   lru-kr:

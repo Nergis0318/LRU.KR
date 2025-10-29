@@ -4,7 +4,7 @@ import string
 from typing import AsyncGenerator
 
 import qrcode
-import redis.asyncio as redis
+import valkey.asyncio as valkey
 
 from .variable import templates, emoji_list, db_pool
 
@@ -16,7 +16,7 @@ digits = string.digits
 async def get_redis():
     global redis_client
     if redis_client is None:
-        redis_client = redis.Redis(connection_pool=db_pool)
+        redis_client = valkey.Valkey(connection_pool=db_pool)
     return redis_client
 
 

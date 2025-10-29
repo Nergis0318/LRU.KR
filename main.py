@@ -12,7 +12,7 @@ from fastapi.responses import (
     FileResponse,
 )
 from fastapi.security import APIKeyHeader
-from redis.commands.json.path import Path
+from valkey.commands.json.path import Path
 
 from src import (
     generate_emoji_key,
@@ -148,6 +148,8 @@ async def redirect_to_original(request: Request, short_key: str):
     data = await db.json().get(short_key, root_path)
 
     try:
-        return RedirectResponse(base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8"))
+        return RedirectResponse(
+            base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8")
+        )
     except:  # noqa: E722
         return HTTP_404(request)
