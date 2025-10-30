@@ -9,7 +9,6 @@ emoji_list = tuple(emoji.EMOJI_DATA.keys())
 
 
 class Config:
-    DOMAIN = os.environ.get("DOMAIN")
     DB = os.environ.get("DB")
     API_KEY = os.environ.get("API_KEY")
 

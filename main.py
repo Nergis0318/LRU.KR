@@ -48,7 +48,6 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware)
 
 api_key_header = APIKeyHeader(name="X-API-KEY")
-domain_prefix = f"{Config.DOMAIN}/"
 root_path = Path.root_path()
 
 
@@ -61,7 +60,7 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
 
 
 async def create_short_link(
-    key_generator: Callable[[], AsyncGenerator[str, None]], url: str
+    key_generator: Callable[[], AsyncGenerator[str, None]], url: str, domain: str
 ):
     key = await anext(key_generator())
     url_hash = base64.b85encode(url.encode()).hex()
@@ -69,7 +68,7 @@ async def create_short_link(
     db = await get_redis()
     await db.json().set(key, root_path, {"url": url_hash})
 
-    return {"short_link": domain_prefix + key}
+    return {"short_link": domain + key}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -88,23 +87,23 @@ async def robots():
 
 
 @app.post("/api/shorten", response_class=ORJSONResponse, tags=["Shorten"])
-async def shorten_link(body: Link):
-    return await create_short_link(generate_key, body.url)
+async def shorten_link(request: Request, body: Link):
+    return await create_short_link(generate_key, body.url, request.base_url)
 
 
 @app.post("/api/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
-async def shorten_number_link(body: Link):
-    return await create_short_link(generate_number_key, body.url)
+async def shorten_number_link(request: Request, body: Link):
+    return await create_short_link(generate_number_key, body.url, request.base_url)
 
 
 @app.post("/api/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
-async def shorten_emoji_link(body: Link):
-    return await create_short_link(generate_emoji_key, body.url)
+async def shorten_emoji_link(request: Request, body: Link):
+    return await create_short_link(generate_emoji_key, body.url, request.base_url)
 
 
 # noinspection PyUnusedLocal
 @app.post("/api/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
-async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_key)):
+async def shorten_custom_link(request: Request, body: CustomLink, api_key: str = Depends(get_api_key)):
     db = await get_redis()
     if await db.exists(body.custom_key):
         raise HTTPException(
@@ -113,11 +112,11 @@ async def shorten_custom_link(body: CustomLink, api_key: str = Depends(get_api_k
 
     url_hash = base64.b85encode(body.url.encode()).hex()
     await db.json().set(body.custom_key, root_path, {"url": url_hash})
-    return {"short_link": domain_prefix + body.custom_key}
+    return {"short_link": request.base_url + body.custom_key}
 
 
 @app.post("/api/shorten/qr", response_class=FileResponse, tags=["Shorten"])
-async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
+async def generate_qr_code(request: Request, body: LinkQRCODE, file: Optional[bool] = None):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode()).hex()
 
@@ -126,7 +125,7 @@ async def generate_qr_code(body: LinkQRCODE, file: Optional[bool] = None):
 
     img_bytes = await asyncio.to_thread(
         generate_qr_code_image,
-        domain_prefix + key,
+        request.base_url + key,
         body.version,
         body.error_correction,
         body.box_size,
