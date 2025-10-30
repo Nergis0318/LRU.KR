@@ -13,6 +13,7 @@ from fastapi.responses import (
 )
 from fastapi.security import APIKeyHeader
 from valkey.commands.json.path import Path
+from starlette.datastructures import URL
 
 from src import (
     generate_emoji_key,
@@ -60,7 +61,7 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
 
 
 async def create_short_link(
-    key_generator: Callable[[], AsyncGenerator[str, None]], url: str, domain: str
+    key_generator: Callable[[], AsyncGenerator[str, None]], url: str, domain: URL
 ):
     key = await anext(key_generator())
     url_hash = base64.b85encode(url.encode()).hex()
@@ -68,7 +69,7 @@ async def create_short_link(
     db = await get_redis()
     await db.json().set(key, root_path, {"url": url_hash})
 
-    return {"short_link": domain + key}
+    return {"short_link": str(domain) + key}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -103,7 +104,9 @@ async def shorten_emoji_link(request: Request, body: Link):
 
 # noinspection PyUnusedLocal
 @app.post("/api/shorten/custom", response_class=ORJSONResponse, tags=["Shorten"])
-async def shorten_custom_link(request: Request, body: CustomLink, api_key: str = Depends(get_api_key)):
+async def shorten_custom_link(
+    request: Request, body: CustomLink, api_key: str = Depends(get_api_key)
+):
     db = await get_redis()
     if await db.exists(body.custom_key):
         raise HTTPException(
@@ -116,7 +119,9 @@ async def shorten_custom_link(request: Request, body: CustomLink, api_key: str =
 
 
 @app.post("/api/shorten/qr", response_class=FileResponse, tags=["Shorten"])
-async def generate_qr_code(request: Request, body: LinkQRCODE, file: Optional[bool] = None):
+async def generate_qr_code(
+    request: Request, body: LinkQRCODE, file: Optional[bool] = None
+):
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode()).hex()
 
