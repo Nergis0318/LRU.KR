@@ -115,7 +115,7 @@ async def shorten_custom_link(
 
     url_hash = base64.b85encode(body.url.encode()).hex()
     await db.json().set(body.custom_key, root_path, {"url": url_hash})
-    return {"short_link": request.base_url + body.custom_key}
+    return {"short_link": str(request.base_url) + body.custom_key}
 
 
 @app.post("/api/shorten/qr", response_class=FileResponse, tags=["Shorten"])
