@@ -3,5 +3,6 @@
     "cSpell.words": [
         "jsonget",
         "sqla"
-    ]
+    ],
+    "python.analysis.typeCheckingMode": "off"
 }
