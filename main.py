@@ -89,17 +89,17 @@ async def robots():
 
 @app.post("/api/shorten", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_link(request: Request, body: Link):
-    return await create_short_link(generate_key(4), body.url, request.base_url)
+    return await create_short_link(generate_key, body.url, request.base_url)
 
 
 @app.post("/api/shorten/number", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_number_link(request: Request, body: Link):
-    return await create_short_link(generate_number_key(4), body.url, request.base_url)
+    return await create_short_link(generate_number_key, body.url, request.base_url)
 
 
 @app.post("/api/shorten/emoji", response_class=ORJSONResponse, tags=["Shorten"])
 async def shorten_emoji_link(request: Request, body: Link):
-    return await create_short_link(generate_emoji_key(), body.url, request.base_url)
+    return await create_short_link(generate_emoji_key, body.url, request.base_url)
 
 
 # noinspection PyUnusedLocal
