@@ -1,32 +1,32 @@
 import asyncio
 import base64
-from typing import Optional, Callable, AsyncGenerator
+from typing import AsyncGenerator, Callable, Optional
 
-from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import (
+    FileResponse,
     HTMLResponse,
     ORJSONResponse,
     RedirectResponse,
-    FileResponse,
 )
 from fastapi.security import APIKeyHeader
-from valkey.commands.json.path import Path
 from starlette.datastructures import URL
+from valkey.commands.json.path import Path
 
 from src import (
-    generate_emoji_key,
-    generate_key,
     HTTP_404,
-    generate_qr_code_image,
-    generate_number_key,
+    Config,
+    CustomLink,
     Link,
     LinkQRCODE,
-    CustomLink,
-    templates,
-    Config,
+    generate_emoji_key,
+    generate_key,
+    generate_number_key,
+    generate_qr_code_image,
     get_redis,
+    templates,
 )
 
 app = FastAPI(
@@ -39,7 +39,7 @@ app = FastAPI(
 
 # noinspection PyTypeChecker
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # ty: ignore[invalid-argument-type]
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
