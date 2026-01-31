@@ -69,7 +69,7 @@ async def create_short_link(
     db = await get_redis()
     await db.json().set(key, root_path, {"url": url_hash})
 
-    return {"short_link": str(domain) + key}
+    return {"short_link": str(domain).replace("http://", "https://") + key}
 
 
 @app.get("/", response_class=HTMLResponse)
