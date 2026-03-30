@@ -1,6 +1,6 @@
 [project]
 name = "lru-kr"
-version = "6.7.5"
+version = "1.0.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -14,7 +14,5 @@ dependencies = [
     "pydantic>=2.11.2",
     "python-dotenv>=1.1.0",
     "qrcode>=8.1",
-    "ruff>=0.11.6",
-    "ty>=0.0.1a13",
     "valkey[libvalkey]>=6.1.1",
 ]
