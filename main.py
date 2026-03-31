@@ -73,8 +73,8 @@ async def create_short_link(
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def root():
+    return FileResponse("templates/index.html")
 
 
 @app.get("/favicon.ico")

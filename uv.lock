@@ -338,7 +338,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/38/49/57857ba9d02ba4df3
 
 [[package]]
 name = "lru-kr"
-version = "6.7.5"
+version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "emoji" },
