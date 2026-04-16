@@ -1,10 +1,9 @@
 ﻿name: lru-kr
+
 services:
-  lru-kr-server:
-    image: ghcr.io/devnergis/lru.kr:latest
-    container_name: lru-kr-server
-    labels:
-      io.containers.autoupdate: image
+  lru-kr_server:
+    image: ghcr.io/nergis0318/lru.kr:latest
+    container_name: lru-kr_server
     ports:
       - 2001:2001
     env_file:
@@ -16,9 +15,9 @@ services:
     healthcheck:
       test: curl http://0.0.0.0:2001 || exit 1
     restart: always
-  lru-kr-db:
+  lru-kr_db:
     image: docker.io/valkey/valkey-bundle:alpine
-    container_name: lru-kr-db
+    container_name: lru-kr_db
     labels:
       io.containers.autoupdate: image
     ports:
