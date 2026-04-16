@@ -32,7 +32,7 @@ app = FastAPI(
     title="LRU.KR",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="LRU.KR is a URL shortening service.",
-    version="1.0.1",
+    version="1.0.2",
 )
 
 
