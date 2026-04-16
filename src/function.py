@@ -22,7 +22,7 @@ async def get_redis():
 
 # noinspection PyPep8Naming
 def HTTP_404(request: object):
-    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)
+    return templates.TemplateResponse("404.html", {"request": request}, status_code=404)  # pyright: ignore[reportArgumentType]
 
 
 async def generate_key(length: int = 4) -> AsyncGenerator[str, None]:

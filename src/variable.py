@@ -14,4 +14,4 @@ class Config:
     API_KEY = os.environ.get("API_KEY")
 
 
-db_pool = valkey.ConnectionPool.from_url(Config.DB)
+db_pool = valkey.ConnectionPool.from_url(Config.DB)  # pyright: ignore[reportArgumentType]

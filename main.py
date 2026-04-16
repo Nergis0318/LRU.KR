@@ -26,14 +26,13 @@ from src import (
     generate_number_key,
     generate_qr_code_image,
     get_redis,
-    templates,
 )
 
 app = FastAPI(
     title="LRU.KR",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="LRU.KR is a URL shortening service.",
-    version="1.0.0",
+    version="1.0.1",
 )
 
 
