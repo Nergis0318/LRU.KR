@@ -8,8 +8,6 @@ services:
       - 2001:2001
     env_file:
       - .env
-    networks:
-      - lru-kr
     environment:
       TZ: Asia/Seoul
     healthcheck:
@@ -26,13 +24,9 @@ services:
       - ${DB_LOCATION}:/data
     env_file:
       - .env
-    networks:
-      - lru-kr
     environment:
       TZ: Asia/Seoul
       REDIS_ARGS: --requirepass ${DB_PASSWORD}
     healthcheck:
       test: valkey-cli ping || exit 1
     restart: always
-networks:
-  lru-kr:
