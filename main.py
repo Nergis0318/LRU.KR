@@ -1,31 +1,32 @@
 import asyncio
 import base64
-from typing import Optional, Callable, AsyncGenerator
+from typing import AsyncGenerator, Callable, Optional
 
-from fastapi import FastAPI, Request, Response, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import (
+    FileResponse,
     HTMLResponse,
     ORJSONResponse,
     RedirectResponse,
-    FileResponse,
 )
 from fastapi.security import APIKeyHeader
-from valkey.commands.json.path import Path
 from starlette.datastructures import URL
+from valkey.commands.json.path import Path
 
 from src import (
-    generate_emoji_key,
-    generate_key,
     HTTP_404,
-    generate_qr_code_image,
-    generate_number_key,
+    AsyncLRUCache,
+    Config,
+    CustomLink,
     Link,
     LinkQRCODE,
-    CustomLink,
-    templates,
-    Config,
+    MetricsMiddleware,
+    generate_emoji_key,
+    generate_key,
+    generate_number_key,
+    generate_qr_code_image,
     get_redis,
 )
 
@@ -33,13 +34,16 @@ app = FastAPI(
     title="LRU.KR",
     summary="Made By Dev_Nergis(Backend, Frontend), ny64(Frontend)",
     description="LRU.KR is a URL shortening service.",
-    version="6.7.4",
+    version="1.0.2",
 )
+
+# Initialize URL cache
+url_cache = AsyncLRUCache(maxsize=10000)
 
 
 # noinspection PyTypeChecker
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # ty: ignore[invalid-argument-type]
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -47,6 +51,7 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware)  # ty:ignore[invalid-argument-type]
+app.add_middleware(MetricsMiddleware)
 
 api_key_header = APIKeyHeader(name="X-API-KEY")
 root_path = Path.root_path()
@@ -69,12 +74,12 @@ async def create_short_link(
     db = await get_redis()
     await db.json().set(key, root_path, {"url": url_hash})
 
-    return {"short_link": str(domain) + key}
+    return {"short_link": str(domain).replace("http://", "https://") + key}
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def root():
+    return FileResponse("templates/index.html")
 
 
 @app.get("/favicon.ico")
@@ -85,6 +90,13 @@ async def favicon():
 @app.get("/robots.txt")
 async def robots():
     return FileResponse("static/robots.txt", filename="robots.txt")
+
+
+@app.get("/metrics")
+async def metrics():
+    from prometheus_client import REGISTRY, generate_latest
+
+    return Response(generate_latest(REGISTRY), media_type="text/plain")
 
 
 @app.post("/api/shorten", response_class=ORJSONResponse, tags=["Shorten"])
@@ -122,12 +134,33 @@ async def shorten_custom_link(
 async def generate_qr_code(
     request: Request, body: LinkQRCODE, file: Optional[bool] = None
 ):
+    from src.metrics import cache_hits, cache_misses, qr_generation_duration
+    import time
+
+    # Generate QR code cache key
+    qr_cache_key = f"qr:{body.data}:{body.version}:{body.error_correction}:{body.box_size}:{body.border}:{body.mask_pattern}"
+
+    db = await get_redis()
+    cached_qr = await db.get(qr_cache_key)
+
+    if cached_qr:
+        cache_hits.labels(cache_type="qr").inc()
+        if file:
+            return Response(cached_qr)
+        else:
+            return HTMLResponse(
+                content=f'<img src="data:image/png;base64,{base64.b64encode(cached_qr).decode()}" />'
+            )
+
+    cache_misses.labels(cache_type="qr").inc()
+
+    # Cache miss - generate QR code
     key = await anext(generate_key())
     url_hash = base64.b85encode(body.data.encode()).hex()
 
-    db = await get_redis()
     await db.json().set(key, root_path, {"url": url_hash})
 
+    start_time = time.time()
     img_bytes = await asyncio.to_thread(
         generate_qr_code_image,
         request.base_url + key,
@@ -137,23 +170,40 @@ async def generate_qr_code(
         body.border,
         body.mask_pattern,
     )
+    qr_generation_duration.observe(time.time() - start_time)
+
+    img_value = img_bytes.getvalue()
+    # Cache QR code for 1 hour
+    await db.setex(qr_cache_key, 3600, img_value)
 
     if file:
-        return Response(img_bytes.getvalue())
+        return Response(img_value)
     else:
         return HTMLResponse(
-            content=f'<img src="data:image/png;base64,{base64.b64encode(img_bytes.getvalue()).decode()}" />'
+            content=f'<img src="data:image/png;base64,{base64.b64encode(img_value).decode()}" />'
         )
 
 
 @app.get("/{short_key}", tags=["Redirect"])
 async def redirect_to_original(request: Request, short_key: str):
+    from src.metrics import cache_hits, cache_misses
+
+    # Check cache first
+    cached_url = await url_cache.get(short_key)
+    if cached_url:
+        cache_hits.labels(cache_type="url").inc()
+        return RedirectResponse(cached_url)
+
+    cache_misses.labels(cache_type="url").inc()
+
+    # Cache miss - fetch from Redis
     db = await get_redis()
     data = await db.json().get(short_key, root_path)
 
     try:
-        return RedirectResponse(
-            base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8")
-        )
+        decoded_url = base64.b85decode(bytes.fromhex(data["url"])).decode("utf-8")
+        # Store in cache for future requests
+        await url_cache.set(short_key, decoded_url)
+        return RedirectResponse(decoded_url)
     except:  # noqa: E722
         return HTTP_404(request)

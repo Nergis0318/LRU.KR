@@ -1,6 +1,6 @@
 from typing import Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Link(BaseModel):
@@ -13,11 +13,12 @@ class CustomLink(Link):
 
 class LinkQRCODE(BaseModel):
     data: str
-    version: Union[int, None] = 1
-    error_correction: Union[int, None] = 0
-    box_size: Union[int, None] = 10
-    border: Union[int, None] = 4
-    mask_pattern: Union[int, None] = 0
+    version: Union[int, None] = Field(default=1, ge=1, le=40)
+    error_correction: Union[int, None] = Field(default=0, ge=0, le=3)
+    box_size: Union[int, None] = Field(default=10, ge=1, le=50)
+    border: Union[int, None] = Field(default=4, ge=0, le=10)
+    mask_pattern: Union[int, None] = Field(default=0, ge=0, le=7)
+
 
 class TossUrl(BaseModel):
     bank_name: str

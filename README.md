@@ -1,6 +1,4 @@
-# LRU
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDevNergis%2FLRU.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FDevNergis%2FLRU?ref=badge_shield)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDevNergis%2FLRU.KR.svg?type=shield&issueType=security)](https://app.fossa.com/projects/git%2Bgithub.com%2FDevNergis%2FLRU.KR?ref=badge_shield&issueType=security)
+# LRU.KR
 
 가볍고 빠른 Python FastAPI + Redis 기반 오픈소스 URL 단축 서비스.
 
@@ -9,6 +7,6 @@
 
 URL의 반대 = LRU
 
-
 ## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDevNergis%2FLRU.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FDevNergis%2FLRU?ref=badge_large)
+
+LRU.KR은 AGPL-3.0-or-latest 라이선스에 따라 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하십시오.
