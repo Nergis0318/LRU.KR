@@ -25,10 +25,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project
 
-COPY main.py .
-COPY src ./src
-COPY templates ./templates
-COPY static ./static
+COPY . .
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-editable
