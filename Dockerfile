@@ -12,9 +12,11 @@ WORKDIR /app
 
 COPY --from=build /app .
 
-EXPOSE 2001
+ENV PATH="/app/venv/bin:$PATH"
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-ENTRYPOINT ["uv", "run", "hypercorn", "main:app", "--bind", "0.0.0.0:2001", "-w", "4"]
+EXPOSE 2001
+
+ENTRYPOINT ["hypercorn", "main:app", "--bind", "0.0.0.0:2001", "-w", "4"]
