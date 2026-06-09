@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:latest AS build
+FROM ghcr.io/astral-sh/uv:debian AS build
 
 WORKDIR /app
 
