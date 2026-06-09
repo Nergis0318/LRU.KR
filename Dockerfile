@@ -1,12 +1,16 @@
-FROM ghcr.io/astral-sh/uv:alpine
+FROM ghcr.io/astral-sh/uv:latest AS build
 
 WORKDIR /app
 
 COPY . .
 
-RUN apk update --no-cache && apk upgrade --no-cache && apk add --no-cache build-base rust cargo curl clang lld
-
 RUN uv sync --frozen --no-cache
+
+FROM ghcr.io/astral-sh/uv:alpine
+
+WORKDIR /app
+
+COPY --from=build /app .
 
 EXPOSE 2001
 
