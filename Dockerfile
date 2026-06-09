@@ -4,9 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update --no-cache && apk upgrade --no-cache && apk add --no-cache build-base rust cargo curl
+RUN apk update --no-cache && apk upgrade --no-cache && apk add --no-cache build-base rust cargo curl clang lld
 
-RUN uv sync --frozen --no-cache --no-build-isolation
+RUN uv sync --frozen --no-cache
 
 EXPOSE 2001
 
