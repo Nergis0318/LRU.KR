@@ -6,7 +6,7 @@ COPY . .
 
 RUN uv sync --frozen --no-cache
 
-FROM ghcr.io/astral-sh/uv:alpine
+FROM ghcr.io/astral-sh/uv:debian-slim
 
 WORKDIR /app
 
